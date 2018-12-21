@@ -1,3 +1,6 @@
+    IF !DEF(PSEUDO_OPS_INCLUDED)
+PSEUDO_OPS_INCLUDED SET 1
+
 ;;;
 ; Loads a byte from anywhere into anything that holds a byte
 ; @usage ldAny
@@ -85,3 +88,15 @@ xorAny: macro
     ld \3, \2
     xor \3
 endm
+
+;;;
+; Resets a bit of an 8bit piece of memory
+; @usage resAny <0-7>, [memory location]
+;;;
+resAny: macro
+    ld A, \2
+    res \1, A
+    ld \2, A
+endm
+
+    ENDC
