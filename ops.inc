@@ -69,7 +69,7 @@ endm
 
 ;;;
 ; Performs an AND on any two bytes. Usual flags affected and A set to the result.
-; @usage andAny C, [HL]
+; @usage andAny C, [HL], B
 ; @param \3 Nominate register to be overwritten
 ;;;
 andAny: macro
@@ -99,4 +99,31 @@ resAny: macro
     ld \2, A
 endm
 
+;;;
+; Resets a bit in the IO/HRAM space of memory ($ff00 - $ffff)
+; @usage resIO <0-7>, [memory location] 
+;;
+resIO: macro
+    ldh A, \2
+    res \1, A
+    ldh \2, A
+endm
+
+;;;
+; Compares two values the first in the IO/HRAM space of memory, setting the C and Z flags as appropriate
+; @usage cpIO [$ff44], B
+;;;
+cpIO: macro
+    ldh A, \1
+    cp \2
+endm
+
+;;;
+; Compares any two values, setting the C and Z flags as appropriate
+; @usage cpIO [$ff44], B
+;;;
+cpAny: macro
+    ld A, \1
+    cp \2
+endm
     ENDC
