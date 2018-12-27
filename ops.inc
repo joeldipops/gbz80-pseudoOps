@@ -2,6 +2,33 @@
 PSEUDO_OPS_INCLUDED SET 1
 
 ;;;
+; Multiplies two numbers
+; @param \1 the first number
+; @param \2 the second number
+; @return A the multiplied result.
+; Don't use this as a macro if you're running out of ROM space
+;;;
+mult: macro
+    push BC
+    push DE
+    ld B, \1
+    ld C, \2
+    ld A, 0
+.loop                         ; do
+        add A, C                ;     result += A
+        dec B                   ;     b--
+        ld D, A
+        ld A, B
+        cp 0                    ; until (b == 0)
+        ld B, A
+        ld A, D   
+        jr NZ, .loop              
+    pop DE
+    pop BC
+endm
+
+
+;;;
 ; Loads a byte from anywhere into anything that holds a byte
 ; @usage ldAny
 ;;;
@@ -100,7 +127,7 @@ resAny: macro
 endm
 
 ;;;
-; Resets a bit in the IO/HRAM space of memory ($ff00 - $ffff)
+; Resets a bit in the IO space of memory ($ff00 - $ffff)
 ; @usage resIO <0-7>, [memory location] 
 ;;
 resIO: macro
@@ -110,8 +137,10 @@ resIO: macro
 endm
 
 ;;;
-; Compares two values the first in the IO/HRAM space of memory, setting the C and Z flags as appropriate
-; @usage cpIO [$ff44], B
+; Compares a value with a value in the IO space of memory.
+; @param \1 The value in IO memory.
+; @param \2 The other value
+; @usage cpIO $ff88, B 
 ;;;
 cpIO: macro
     ldh A, \1
@@ -119,11 +148,32 @@ cpIO: macro
 endm
 
 ;;;
-; Compares any two values, setting the C and Z flags as appropriate
-; @usage cpIO [$ff44], B
+; Compares two values, setting appropriate flags.
+; @usage cpAny B, [$c312] 
 ;;;
 cpAny: macro
     ld A, \1
     cp \2
+endm
+
+;;;
+; Increment any 8bit value
+; @usage incAny [SomeAddress]
+;;;
+incAny: macro
+    ld A, \1
+    inc A
+    ld \1, A
+endm
+
+;;;
+; Decrement any 8bit value
+; @usage decAny [SomeAddress]
+;;;
+decAny: macro
+    ld A, \1
+    dec A
+    ld \1, A
+    
 endm
     ENDC
