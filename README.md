@@ -131,82 +131,82 @@ Symbol|Def
 * Cycles: 2
 * Bytes: 2
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: 0 
-** C: 0
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0 
+    * C: 0
 
 **orAny r8, n8**
 * Cycles: 4
 * Bytes: 4 
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: 0 
-** C: 0
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0 
+    * C: 0
 
 **orAny r8, [HL]**
 * Cycles: 3
 * Bytes: 2
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: 0 
-** C: 0
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0 
+    * C: 0
 
 **orAny [r16], r8**
 * Cycles: 3
 * Bytes: 2
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: 0 
-** C: 0
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0 
+    * C: 0
 
 **orAny [r16], n8**
 * Cycles: 4
 * Bytes: 3 
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: 0 
-** C: 0
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0 
+    * C: 0
 
 **orAny [r16], [HL]**
 * Cycles: 4
 * Bytes: 2
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: 0 
-** C: 0
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0 
+    * C: 0
 
 **orAny [n16], r8**
 * Cycles: 5
 * Bytes: 4
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: 0 
-** C: 0
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0 
+    * C: 0
 
 **orAny [n16], n8**
 * Cycles: 6
 * Bytes: 5 
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: 0 
-** C: 0
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0 
+    * C: 0
 
 **orAny [n16], [HL]**
 * Cycles: 6
 * Bytes: 4
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: 0 
-** C: 0
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0 
+    * C: 0
 
 ### andAny
 
@@ -331,10 +331,10 @@ Flags: Z=? N=0 H=0 C=0
 * Cycles: 5
 * Bytes: 4
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 1
-** H: Reset if borrow from bit 4, set otherwise.
-** C: Set if *n8* > [$ff00 + n8]
+    * Z: Set if result is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if *n8* > [$ff00 + n8]
 
 cpIO [$ff00 + n8], r8 
 Cycles: 4
@@ -400,20 +400,20 @@ Flags: Z=? N=1, H=? C=?
 * Cycles: 9
 * Bytes: 7
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: Set if overflow from bit 3
-** C: Not affected
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: Set if overflow from bit 3
+    * C: Not affected
 
 **incAny [r16]**
 * Increment value at address pointed to by *r16* by 1
 * Cycles: 5
 * Bytes: 3
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 0
-** H: Set if overflow from bit 3
-** C: Not affected
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: Set if overflow from bit 3
+    * C: Not affected
 
 ### decAny
 
@@ -422,19 +422,19 @@ Flags: Z=? N=1, H=? C=?
 * Cycles: 9
 * Bytes: 7
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 1
-** H: Reset if borrow from bit 4, set otherwise
-** C: Not affected
+    * Z: Set if result is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise
+    * C: Not affected
 
 **decAny [r16]**
 * Cycles: 5
 * Bytes: 3
 * Flags: 
-** Z: Set if result is 0, reset otherwise
-** N: 1
-** H: Reset if borrow from bit 4, set otherwise
-** C: Not affected
+    * Z: Set if result is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise
+    * C: Not affected
 
 ### ld16
 
