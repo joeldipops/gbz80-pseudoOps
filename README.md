@@ -107,19 +107,19 @@ Symbol|Def
 ### ldiAny
 
 **ldiAny r8, [HL]**
-* Store value at address pointed to by HL into register *r8* then increments HL
+* Store value at address pointed to by HL into register *r8* then increments **HL**
 * Cycles: 3
 * Bytes: 2
 * Flags: None
 
 **ldiAny [r16], [HL]**
-* Store value at address pointed to by HL into address pointed to by *r16* then increments HL
+* Store value at address pointed to by HL into address pointed to by *r16* then increments **HL**
 * Cycles: 4
 * Bytes: 2
 * Flags: None
 
 **ldiAny [n16], [HL]**
-* Store value at address pointed to by HL into address *n16* then increments HL
+* Store value at address pointed to by HL into address *n16* then increments **HL**
 * Cycles: 6
 * Bytes: 4
 * Flags: None
@@ -127,7 +127,7 @@ Symbol|Def
 ### orAny
 
 **orAny r8, r8**
-* Bitwise OR between the values in two registers *r8*.  Result in A
+* Bitwise OR between the values in two registers *r8*.  Result in **A**
 * Cycles: 2
 * Bytes: 2
 * Flags: 
@@ -137,6 +137,7 @@ Symbol|Def
     * C: 0
 
 **orAny r8, n8**
+* Bitwise or between the value in *r8* and *n8*. Result in **A**
 * Cycles: 4
 * Bytes: 4 
 * Flags: 
@@ -146,6 +147,7 @@ Symbol|Def
     * C: 0
 
 **orAny r8, [HL]**
+* Bitwise OR between the value in *r8* and the value at address pointed to by **HL**. Result in **A**
 * Cycles: 3
 * Bytes: 2
 * Flags: 
@@ -155,6 +157,7 @@ Symbol|Def
     * C: 0
 
 **orAny [r16], r8**
+* Bitwise OR between the value at address pointed to by *r16* and the value in *r8*. Result in **A**
 * Cycles: 3
 * Bytes: 2
 * Flags: 
@@ -164,6 +167,7 @@ Symbol|Def
     * C: 0
 
 **orAny [r16], n8**
+* Bitwise OR between the value at address pointed to by *r16* and *n8*. Result in **A**
 * Cycles: 4
 * Bytes: 3 
 * Flags: 
@@ -173,6 +177,7 @@ Symbol|Def
     * C: 0
 
 **orAny [r16], [HL]**
+* Bitwise OR between the value at address pointed to by *r16* and the value at address pointed to by **HL**. Result in **A**
 * Cycles: 4
 * Bytes: 2
 * Flags: 
@@ -182,6 +187,7 @@ Symbol|Def
     * C: 0
 
 **orAny [n16], r8**
+* Bitwise OR between the value at address *n16* and the value of *r8*. Result in **A**
 * Cycles: 5
 * Bytes: 4
 * Flags: 
@@ -191,6 +197,7 @@ Symbol|Def
     * C: 0
 
 **orAny [n16], n8**
+* Bitwise OR between the value at address *n16* and *n8*. Result in **A**
 * Cycles: 6
 * Bytes: 5 
 * Flags: 
@@ -200,6 +207,7 @@ Symbol|Def
     * C: 0
 
 **orAny [n16], [HL]**
+* Bitwise OR between the value at address *n16* and the value at address pointed to by **HL**. Result in **A**
 * Cycles: 6
 * Bytes: 4
 * Flags: 
@@ -208,52 +216,97 @@ Symbol|Def
     * H: 0 
     * C: 0
 
-### andAny
+## andAny
 
-andAny r8, r8
-Cycles: 2
-Bytes: 2
-Flags: Z=? N=0 H=1 C=0
+**andAny r8, r8**
+* Bitwise AND between two registers *r8*.  Result in **A**
+* Cycles: 2
+* Bytes: 2
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0 
+    * H: 1
+    * C: 0
 
-andAny r8, n8
-Cycles: 4
-Bytes: 4 
-Flags: Z=? N=0 H=1 C=0
+**andAny r8, n8**
+* Bitwise AND between the value in *r8* and *n8*.  Result in **A**
+* Cycles: 4
+* Bytes: 4 
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0 
+    * H: 1
+    * C: 0
 
-andAny r8, [HL]
-Cycles: 3
-Bytes: 2
-Flags: Z=? N=0 H=1 C=0
+**andAny r8, [HL]**
+* Bitwise AND between the value in *r8* and the value at address pointed to by **HL**.  Result in **A**
+* Cycles: 3
+* Bytes: 2
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0 
+    * H: 1
+    * C: 0
 
-andAny [r16], r8
-Cycles: 3
-Bytes: 2
-Flags: Z=? N=0 H=1 C=0
+**andAny [r16], r8**
+* Bitwise AND between the value at address pointed to by *r16* and the value in *r8*. Result in **A**
+* Cycles: 3
+* Bytes: 2
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0 
+    * H: 1
+    * C: 0
 
-andAny [r16], n8
-Cycles: 4
-Bytes: 3 
-Flags: Z=? N=0 H=1 C=0
+**andAny [r16], n8**
+* Bitwise AND between the value at address pointed to by *r16* and *n8*. Result in **A**
+* Cycles: 4
+* Bytes: 3 
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0 
+    * H: 1
+    * C: 0
 
-andAny [r16], [HL]
-Cycles: 4
-Bytes: 2
-Flags: Z=? N=0 H=1 C=0
+**andAny [r16], [HL]**
+* Bitwise AND between the value at address pointed to by *r16* and the value at address pointed to by **HL**. Result in **A**
+* Cycles: 4
+* Bytes: 2
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0 
+    * H: 1
+    * C: 0
 
-andAny [n16], r8
-Cycles: 5
-Bytes: 4
-Flags: Z=? N=0 H=1 C=0
+**andAny [n16], r8**
+* Bitwise AND between the value at address *n16* and the value in *r8*. Result in **A**
+* Cycles: 5
+* Bytes: 4
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0 
+    * H: 1
+    * C: 0
 
-andAny [n16], n8
-Cycles: 6
-Bytes: 5 
-Flags: Z=? N=0 H=1 C=0
+**andAny [n16], n8**
+* Bitwise AND between the value at address pointed to by *r16* and *n8*. Result in **A**
+* Cycles: 6
+* Bytes: 5 
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0 
+    * H: 1
+    * C: 0
 
-andAny [n16], [HL]
-Cycles: 6
-Bytes: 4
-Flags: Z=? N=0 H=1 C=0
+**andAny [n16], [HL]**
+* Bitwise AND between the value at address pointed to by *r16* and the value at address pointed to by **HL**. Result in **A**
+* Cycles: 6
+* Bytes: 4
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0 
+    * H: 1
+    * C: 0
 
 ### xorAny
 
