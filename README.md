@@ -8,6 +8,13 @@ So this is my attempt to simplify the writing and most relevantly the reading of
 
 This is a work in progress, so more pseudo-ops will be added as I come across a case for them in the software I write.
 
+## Usage
+The ops can be included with
+`INCLUDE "ops.inc"`
+
+There's also a list of hardware memory locations, with names like `BackgroundScrollX` that you may prefer to the traditional gbhw.inc names such as `rSCY`.  That's in
+`INCLUDE "addresses.inc"`
+
 ## Legend
 List of abbreviations, as used by rgbasm in https://rednex.github.io/rgbds/gbz80.7.html
 
@@ -216,7 +223,7 @@ Symbol|Def
     * H: 0 
     * C: 0
 
-## andAny
+### andAny
 
 **andAny r8, r8**
 * Bitwise AND between two registers *r8*.  Result in **A**
@@ -330,7 +337,7 @@ Symbol|Def
     * H: 0
     * C: 0
 
-xorAny r8, [HL]
+**xorAny r8, [HL]**
 * Bitwise XOR between the value of *r8* and the value at address pointed to by **HL**.  Result in **A**
 * Cycles: 3
 * Bytes: 2
@@ -432,7 +439,7 @@ xorAny r8, [HL]
     * Z: Set if result is 0, reset otherwise
     * N: 1
     * H: Reset if borrow from bit 4, set otherwise.
-    * C: Set if *n8* > [$ff00 + n8]
+    * C: Set if *n8* > [$ff00 + n8], reset otherwise
 
 **cpIO [$ff00 + n8], r8** 
 * Subtracts the value of *r8* from the value in HRAM or IO space at address $ff*n8* and sets flags accordingly without storing the result.
@@ -442,7 +449,7 @@ xorAny r8, [HL]
     * Z: Set if result is 0, reset otherwise
     * N: 1
     * H: Reset if borrow from bit 4, set otherwise.
-    * C: Set if *n8* > [$ff00 + n8]
+    * C: Set if *r8* > [$ff00 + n8], reset otherwise
 
 **cpIO [$ff00 + n8], [HL]** 
 * Subtracts the value at address pointed to by **HL** from the value in HRAM or IO space at address $ff*n8* and sets flags accordingly without storing the result.
@@ -452,54 +459,98 @@ xorAny r8, [HL]
     * Z: Set if result is 0, reset otherwise
     * N: 1
     * H: Reset if borrow from bit 4, set otherwise.
-    * C: Set if *n8* > [$ff00 + n8]
+    * C: Set if [HL] > [$ff00 + n8], reset otherwise
 
 ### cpAny
 
-cpAny r8, n8
-Cycles: 4
-Bytes: 4
-Flags: Z=? N=1, H=? C=?
+**cpAny r8, n8**
+* Subtract the *n8* from the value in *r8* and set flags accordingly, without storing the result.
+* Cycles: 4
+* Bytes: 4
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if *n8* > *r8*, reset otherwise
 
-cpAny r8, r8
-Cycles: 3
-Bytes: 3
-Flags: Z=? N=1, H=? C=?
+**cpAny r8, r8**
+* Subtract the value in one register *r8* from another register *r8* and set flags accordingly, without storing the result.
+* Cycles: 3
+* Bytes: 3
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if second *r8* > than first *r8*, reset otherwise
+    
+**cpAny r8, [HL]**
+* Subtract the value at address pointed to by **HL** from value of *r8* and set flags accordingly, without storing the result.
+* Cycles: 4
+* Bytes: 3
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if value at [**HL**] > *r8*, reset otherwise
 
-cpAny r8, [HL]
-Cycles: 4
-Bytes: 3
-Flags: Z=? N=1, H=? C=?
+**cpAny [r16], n8**
+* Subtract *n8* from value at address pointed to by *r16* and set flags accordingly, without storing the result.
+* Cycles: 4
+* Bytes: 3* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if *n8* > value at [*r16*], reset otherwise
 
-cpAny [r16], n8
-Cycles: 4
-Bytes: 3
-Flags: Z=? N=1, H=? C=?
+**cpAny [r16], r8**
+* Subtract value in *r8* from value at address pointed to by *r16* and set flags accordinly, without storing the result.
+* Cycles: 3
+* Bytes: 2
+* Flags: 
+    * Z: Set if result is 0, reset otherwise.
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if *r8* > value at [*r16*], reset otherwise
 
-cpAny [r16], r8
-Cycles: 3
-Bytes: 2
-Flags: Z=? N=1, H=? C=?
+**cpAny [r16], [HL]**
+* Subtract value at address pointed to by **HL** from value at address pointed to by *r16* and set flags accordinly, without storing the result.
+* Cycles: 4
+* Bytes: 2
+* Flags: 
+    * Z: Set if result is 0.
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if [**HL**] > [*r16*], reset otherwise
 
-cpAny [r16], [HL]
-Cycles: 4
-Bytes: 2
-Flags: Z=? N=1, H=? C=?
+**cpAny [n16], n8**
+* Subtract *n8* from value at address *n16* and set flags accordinly without storing the result.
+* Cycles: 6
+* Bytes: 5
+* Flags: 
+    * Z: Set if result is 0, reset otherwise.
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if *n8* > [*n16*], reset otherwise.
 
-cpAny [n16], n8
-Cycles: 6
-Bytes: 5
-Flags: Z=? N=1, H=? C=?
-
-cpAny [n16], r8
-Cycles: 5
-Bytes: 4
-Flags: Z=? N=1, H=? C=?
-
-cpAny [n16], [HL]
-Cycles: 6
-Bytes: 4
-Flags: Z=? N=1, H=? C=?
+**cpAny [n16], r8**
+* Subtract value of *r8* from value at address *n16* and set flags accordinly without storing the result.
+* Cycles: 5
+* Bytes: 4
+* Flags: 
+    * Z: Set if result is 0, reset otherwise.
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if *r8* > [*n16*], reset otherwise.
+        
+**cpAny [n16], [HL]**
+* Subtract value of address pointed to by **HL** from value at address *n16* and set flags accordinly, without storing the result.
+* Cycles: 6
+* Bytes: 4
+* Flags: 
+    * Z: Set if result is 0, reset otherwise.
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if [**HL**] > [*r16*], reset othwerwise.
 
 ### incAny
 
@@ -560,7 +611,7 @@ Flags: Z=? N=1, H=? C=?
 * eg. sub16 H,L, B,C
 * Cycles: 6
 * Bytes: 6
-* Flags: Z=? N=1 H=? C=?
+* Flags: TBC
 
 ### mult 
 
