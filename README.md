@@ -107,19 +107,19 @@ Symbol|Def
 ### ldiAny
 
 **ldiAny r8, [HL]**
-* Store value at address pointed to by HL into register *r8* then increments **HL**
+* Store value at address pointed to by **HL** into register *r8* then increments **HL**
 * Cycles: 3
 * Bytes: 2
 * Flags: None
 
 **ldiAny [r16], [HL]**
-* Store value at address pointed to by HL into address pointed to by *r16* then increments **HL**
+* Store value at address pointed to by **HL** into address pointed to by *r16* then increments **HL**
 * Cycles: 4
 * Bytes: 2
 * Flags: None
 
 **ldiAny [n16], [HL]**
-* Store value at address pointed to by HL into address *n16* then increments **HL**
+* Store value at address pointed to by **HL** into address *n16* then increments **HL**
 * Cycles: 6
 * Bytes: 4
 * Flags: None
@@ -310,50 +310,95 @@ Symbol|Def
 
 ### xorAny
 
-xorAny r8, r8
-Cycles: 2
-Bytes: 2
-Flags: Z=? N=0 H=0 C=0
+**xorAny r8, r8**
+* Bitwise XOR between the value of two registers *r8*.  Result in **A**
+* Cycles: 2
+* Bytes: 2
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0
+    * C: 0
 
-xorAny r8, n8
-Cycles: 4
-Bytes: 4 
-Flags: Z=? N=0 H=0 C=0
+**xorAny r8, n8**
+* Bitwise XOR between the value of *r8* and *n8*. Result in **A**.
+* Cycles: 4
+* Bytes: 4 
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0
+    * C: 0
 
 xorAny r8, [HL]
-Cycles: 3
-Bytes: 2
-Flags: Z=? N=0 H=0 C=0
+* Bitwise XOR between the value of *r8* and the value at address pointed to by **HL**.  Result in **A**
+* Cycles: 3
+* Bytes: 2
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0
+    * C: 0
 
-xorAny [r16], r8
-Cycles: 3
-Bytes: 2
-Flags: Z=? N=0 H=0 C=0
+**xorAny [r16], r8**
+* Bitwise XOR between the value at address pointed to by *r16* and the value in *r8*.  Result in **A**
+* Cycles: 3
+* Bytes: 2
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0
+    * C: 0
 
-xorAny [r16], n8
-Cycles: 4
-Bytes: 3 
-Flags: Z=? N=0 H=0 C=0
+**xorAny [r16], n8**
+* Bitwise XOR between the value at address pointed to by *r16* and *n8*.  Result in **A**
+* Cycles: 4
+* Bytes: 3 
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0
+    * C: 0
 
-xorAny [r16], [HL]
-Cycles: 4
-Bytes: 2
-Flags: Z=? N=0 H=0 C=0
+**xorAny [r16], [HL]**
+* Bitwise XOR between the value at address pointed to by *r16* and the value at address pointed to be **HL**.  Result in **A**
+* Cycles: 4
+* Bytes: 2
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0
+    * C: 0
 
-xorAny [n16], r8
-Cycles: 5
-Bytes: 4
-Flags: Z=? N=0 H=0 C=0
+**xorAny [n16], r8**
+* Bitwise XOR between the value at address *n16* and the value of *r8*.  Result in **A**
+* Cycles: 5
+* Bytes: 4
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0
+    * C: 0
 
-xorAny [n16], n8
-Cycles: 6
-Bytes: 5 
-Flags: Z=? N=0 H=0 C=0
+**xorAny [n16], n8**
+* Bitwise XOR between the value at address *n16* and *n8*. Result in **A**
+* Cycles: 6
+* Bytes: 5 
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0
+    * C: 0
 
-xorAny [n16], [HL]
-Cycles: 6
-Bytes: 4
-Flags: Z=? N=0 H=0 C=0
+**xorAny [n16], [HL]**
+* Bitwise XOR between the value at address *n16* and the value at address pointed to by **HL**.  Result in **A**
+* Cycles: 6
+* Bytes: 4
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 0
+    * H: 0
+    * C: 0
 
 ### resAny
 
@@ -389,15 +434,25 @@ Flags: Z=? N=0 H=0 C=0
     * H: Reset if borrow from bit 4, set otherwise.
     * C: Set if *n8* > [$ff00 + n8]
 
-cpIO [$ff00 + n8], r8 
-Cycles: 4
-Bytes: 3
-Flags: Z=? N=1, H=? C=?
+**cpIO [$ff00 + n8], r8** 
+* Subtracts the value of *r8* from the value in HRAM or IO space at address $ff*n8* and sets flags accordingly without storing the result.
+* Cycles: 4
+* Bytes: 3
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if *n8* > [$ff00 + n8]
 
-cpIO [$ff00 + n8], [HL] 
-Cycles: 5
-Bytes: 3
-Flags: Z=? N=1, H=? C=?
+**cpIO [$ff00 + n8], [HL]** 
+* Subtracts the value at address pointed to by **HL** from the value in HRAM or IO space at address $ff*n8* and sets flags accordingly without storing the result.
+* Cycles: 5
+* Bytes: 3
+* Flags: 
+    * Z: Set if result is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 4, set otherwise.
+    * C: Set if *n8* > [$ff00 + n8]
 
 ### cpAny
 
@@ -507,13 +562,13 @@ Flags: Z=? N=1, H=? C=?
 * Bytes: 6
 * Flags: Z=? N=1 H=? C=?
 
-### mult
+### mult 
 
-mult 
-Multiplies two numbers
-@param \1 the first number
-@param \2 the second number
-@return A the multiplied result.
-Don't use this as a macro if you're running out of ROM space
+**mult r8, r8**
+* Multiplies numbers in two registers *r8*.  Result in **A**.
+* Don't use this as a macro if you're running out of ROM space
+* Cycles: Depends on value of operands.
+* Bytes: TBC
+* Flags: TBC
 
 
