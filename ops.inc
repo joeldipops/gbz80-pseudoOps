@@ -1,32 +1,46 @@
     IF !DEF(PSEUDO_OPS_INCLUDED)
 PSEUDO_OPS_INCLUDED SET 1
 
+addAny: macro
+    ld A, \1
+    add \2
+    ld \1, A 
+endm
+
+adcAny: macro
+    ld A, \1
+    adc \2
+    ld \1, A 
+endm
+
 ;;;
-; Multiplies two numbers
-; @param \1 the first number
-; @param \2 the second number
-; @return A the multiplied result.
-; Don't use this as a macro if you're running out of ROM space
+; mult r8, r8
+; Multiples two numbers, result in HL
 ;;;
 mult: macro
     push BC
-    push DE
+    ld HL, 0
     ld B, \1
     ld C, \2
+
+    ; If either of the operands are 0, return 0
+    or B
+        jr Z, .end
+    or C
+        jr Z, .end
+
     ld A, 0
-.loop                         ; do
-        add A, C                ;     result += A
-        dec B                   ;     b--
-        ld D, A
-        ld A, B
-        cp 0                    ; until (b == 0)
-        ld B, A
-        ld A, D   
-        jr NZ, .loop              
-    pop DE
+.loop
+        ; TODO can we use `add HL, r16`??
+        add A, C
+        ld L, A
+        adcAny H, 0
+        dec B
+        ld A, L
+    jr NZ, .loop
+.end
     pop BC
 endm
-
 
 ;;;
 ; Loads byte from anywhere to anywhere else that takes a byte.
@@ -69,7 +83,12 @@ endm
 ; Cycles: 8
 ; Bytes: 6
 ; Flags: None
+;
 ; ldAny [n16], n8
+; Cycles: 
+; Bytes:
+; Flags: None
+;
 ;;;
 ldAny: macro
     ld A, \2
@@ -124,6 +143,17 @@ endm
 ldiAny: macro
     ldi A, [HL]
     ld \1, A
+endm
+
+;;;
+; ldHLi [HL], n8
+; Cycles: 6
+; Bytes: 4
+; Flags: None
+;;;
+ldHLi: macro
+    ld A, \2
+    ldi [HL], A
 endm
 
 ;;;
@@ -307,12 +337,12 @@ endm
 ;;;
 ; Resets a bit of an 8bit piece of IO space memory
 ;
-; resIO u3, [$ff00 + n8]
+; resH u3, [$ff00 + n8]
 ; Cycles: 8 
 ; Bytes: 6
 ; Flags: None
 ;;;
-resIO: macro
+resH: macro
     ldh A, \2
     res \1, A
     ldh \2, A
@@ -321,22 +351,22 @@ endm
 ;;;
 ; Compares a value with a value in the IO space of memory and sets flags.
 ;
-; cpIO [$ff00 + n8], n8
+; cpH [$ff00 + n8], n8
 ; Cycles: 5
 ; Bytes: 4
 ; Flags: Z=? N=1, H=? C=?
 ;
-; cpIO [$ff00 + n8], r8 
+; cpH [$ff00 + n8], r8 
 ; Cycles: 4
 ; Bytes: 3
 ; Flags: Z=? N=1, H=? C=?
 ;
-; cpIO [$ff00 + n8], [HL] 
+; cpH [$ff00 + n8], [HL] 
 ; Cycles: 5
 ; Bytes: 3
 ; Flags: Z=? N=1, H=? C=?
 ;;;
-cpIO: macro
+cpH: macro
     ldh A, \1
     cp \2
 endm
@@ -480,4 +510,4 @@ sub16: macro
     ld \1, A 
 endm
     
-	ENDC
+    ENDC
