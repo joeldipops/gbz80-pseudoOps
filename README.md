@@ -616,10 +616,14 @@ Symbol|Def
 ### mult 
 
 **mult r8, r8**
-* Multiplies numbers in two registers *r8*.  Result in **A**.
-* Don't use this as a macro if you're running out of ROM space
+* Multiplies numbers in two registers *r8*.  Result in **HL**.
 * Cycles: Depends on value of operands.
 * Bytes: TBC
 * Flags: TBC
 
+**mult r8, n8**
+* Multiplies value in *r8* with *n8*.  Result in **HL**.
+* Cycles: Depends on value of operands.
+* Bytes: TBC
+* Flags: TBC
 
