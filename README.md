@@ -29,6 +29,8 @@ Symbol|Def
 
 ## The Ops
 
+*Unless otherwise specified, all ops will overwrite A, and have no other side-effects*
+
 ### ldAny
 
 **ldAny r8, [n16]**
@@ -609,6 +611,7 @@ Symbol|Def
 **sub16 r16high,r16low, r16high,r16low**
 *
 * eg. sub16 H,L, B,C
+* Side Effects: TBC
 * Cycles: 6
 * Bytes: 6
 * Flags: TBC
@@ -617,12 +620,14 @@ Symbol|Def
 
 **mult r8, r8**
 * Multiplies numbers in two registers *r8*.  Result in **HL**.
+* Side Effects: TBC
 * Cycles: Depends on value of operands.
 * Bytes: TBC
 * Flags: TBC
 
 **mult r8, n8**
 * Multiplies value in *r8* with *n8*.  Result in **HL**.
+* Side Effects: TBC
 * Cycles: Depends on value of operands.
 * Bytes: TBC
 * Flags: TBC
