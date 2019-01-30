@@ -2,27 +2,39 @@
 ADDRESSES_INCLUDED SET 1
 
 ;;;;;;;;;;;;;;; Hardware Addresses ;;;;;;;;;;;;;;;;;;;;;
+MemoryBankSelector EQU $2000
+
 TileData EQU $8000
 BackgroundMap1 EQU $9800
 BackgroundMap2 EQU $9c00
 
-JoypadIo EQU $ff00
-InterruptFlags EQU $ff0f
+JoypadIo EQU $ff00              ; P1
+LinkData EQU $ff01              ; SB
+LinkControl EQU $ff02           ; SC
 
-AudioSpeakerControl EQU $ff24
-AudioSpeakerChannels EQU $ff25
-AudioState EQU $ff26
+TimerControl EQU $ff07          ; TAC
+InterruptFlags EQU $ff0f        ; IF
 
-LcdControl EQU $ff40
-LcdStatus EQU $ff41
+AudioSpeakerControl EQU $ff24   ; NR 50
+AudioSpeakerChannels EQU $ff25  ; NR 51
+AudioChannelSwitch EQU $ff26    ; NR 52
 
-BackgroundScrollY EQU $ff42
-BackgroundScrollX EQU $ff43
-CurrentLine EQU $ff44
+AudioChannel3Data EQU $ff30     ; 16 byte Wave Patterm
 
-DmaSourceRegister EQU $ff46
-BackgroundPalette EQU $ff47
-SpritePalette0 EQU $ff48
-SpritePalette1 EQU $ff49
+LcdControl EQU $ff40            ; LCDC
+LcdStatus EQU $ff41             ; STAT
+
+BackgroundScrollY EQU $ff42     ; SCY
+BackgroundScrollX EQU $ff43     ; SCX
+CurrentLine EQU $ff44           ; LY
+
+DmaSourceRegister EQU $ff46     ; DMA
+BackgroundPalette EQU $ff47     ; BGP
+SpritePalette0 EQU $ff48        ; OBP0
+SpritePalette1 EQU $ff49        ; OBP1
+
+WindowTop EQU $ff4a             ; WY
+WindowLeft EQU $ff4b            ; WX
+InterruptSwitch EQU $ffff       ; IE
 
     ENDC
