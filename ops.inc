@@ -33,6 +33,16 @@ dbs: macro
 endm
 
 ;;;
+; Pushes an immediate value on to the stack.
+; pushAny r16
+; Affects HL
+;;;
+pushAny: macro
+    ld HL, \1
+    push HL
+endm
+
+;;;
 ; mult r8, r8
 ; Multiples two numbers, result in HL
 ;;;
@@ -482,12 +492,15 @@ decAny: macro
 endm
 
 ;;;
-; Loads one 16 bit register into another
+; Loads a 16 bit register
 ;
 ; ld16 r16high,r16low, r16high,r16low
 ; Cycles: 2
 ; Bytes: 2
 ; Flags: None
+;
+; ld16 r16high,r16low, n8,n8
+; 
 ;
 ; @example - ld16 H,L, B,C
 ; @notes - rgbasm has the conditional assembly directive IF - I thought I would be able to be like 
@@ -501,6 +514,27 @@ endm
 ld16: macro
     ld \1, \3
     ld \2, \4
+endm
+
+;;;
+; Loads a 16bit block of memory in to r16
+; ld16RA r16high,r16low, n16
+;;;
+ld16RA: macro
+    ld A, [\3]
+    ld \1, A
+    ld A, [\3 + 1]
+    ld \2, A
+endm
+
+;;;
+; Loads a 16bit regisuter in to memory
+;;;
+ld16AR: macro
+    ld A, \2
+    ld [\1], A
+    ld A, \3
+    ld [\3 + 1], A
 endm
 
 ;;;
@@ -527,6 +561,21 @@ sub16: macro
     ld A, \1
     sbc \3
     ld \1, A 
+endm
+
+
+
+;;;
+; Adds two 16bit registers together. Result in the first.
+; add16 r16high,r16low, r16high,r16low
+;;;
+add16: macro
+    ld A, \2
+    add \4
+    ld \2, A
+    ld A, \1
+    adc \3
+    ld \1, A
 endm
     
     ENDC

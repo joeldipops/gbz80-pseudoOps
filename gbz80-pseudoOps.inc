@@ -1,0 +1,9 @@
+    IF !DEF(GBZ80_PSEUDOOPS_INCLUDED)
+
+GBZ80_PSEUDOOPS_INCLUDED SET 1
+INCLUDE "utils.inc"
+INCLUDE "ops.inc"
+INCLUDE "addresses.inc"
+INCLUDE "constants.inc"
+
+    ENDC
