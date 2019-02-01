@@ -1,7 +1,6 @@
     IF !DEF(ADDRESSES_INCLUDED)
 ADDRESSES_INCLUDED SET 1
 
-;;;;;;;;;;;;;;; Hardware Addresses ;;;;;;;;;;;;;;;;;;;;;
 MemoryBankSelector EQU $2000
 
 TileData EQU $8000
