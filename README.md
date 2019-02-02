@@ -15,6 +15,10 @@ The ops can be included with
 There's also a list of hardware memory locations, with names like `BackgroundScrollX` that you may prefer to the traditional gbhw.inc names such as `rSCY`.  That's in
 `INCLUDE "addresses.inc"`
 
+As well as some random utility macros you may find a use for.
+
+You can include everything with `INCLUDE "gbz80-pseudoOps.inc`.  You may as well - it's all macros so won't take up any cart space or cycles.
+
 ## Legend
 List of abbreviations, as used by rgbasm in https://rednex.github.io/rgbds/gbz80.7.html
 
