@@ -1,12 +1,12 @@
     IF !DEF(ADDRESSES_INCLUDED)
 ADDRESSES_INCLUDED SET 1
 
-MemoryBankSelector EQU $2000
-
+; VRAM addresses
 TileData EQU $8000
 BackgroundMap1 EQU $9800
 BackgroundMap2 EQU $9c00
 
+; HRAM addresses
 JoypadIo EQU $ff00              ; P1
 LinkData EQU $ff01              ; SB
 LinkControl EQU $ff02           ; SC
@@ -61,5 +61,18 @@ SpritePalette1 EQU $ff49        ; OBP1
 WindowTop EQU $ff4a             ; WY
 WindowLeft EQU $ff4b            ; WX
 InterruptSwitch EQU $ffff       ; IE
+
+
+; Memory Bank Controller Write-only addresses
+
+RomBankSelector EQU $2000
+HighRomBankSelector EQU $3000   ; For MBCs with more than 256 banks, the highest bit is set here.
+RamSwitch EQU $0000
+
+RamSelector EQU $4000
+BankMode EQU $6000
+
+RealTimeClockMode EQU $4000
+LatchRealTimeClock EQU $6000    ; Stops the RTC from updating the registers, so the same value can be read until it is unlatched.
 
     ENDC
