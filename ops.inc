@@ -168,21 +168,22 @@ endm
 ; Cycles: 6
 ; Bytes: 4
 ; Flags: None
-;;;
-ldiAny: macro
-    ldi A, [HL]
-    ld \1, A
-endm
-
-;;;
+;
 ; ldHLi [HL], n8
 ; Cycles: 6
 ; Bytes: 4
 ; Flags: None
 ;;;
-ldHLi: macro
-    ld A, \2
-    ldi [HL], A
+ldiAny: macro
+    IF "\1" == "[HL]"
+        ld A, \2
+        ldi [HL], A
+    ELIF "\2" == "[HL]"
+        ldi A, [HL]
+        ld \1, A
+    ELSE
+        FAIL("ldi requires [HL]")
+    ENDC
 endm
 
 ;;;
@@ -492,28 +493,45 @@ decAny: macro
 endm
 
 ;;;
+; internal macro for ld16 to deal with the second register.
+; @param \1 r8 high desitnation
+; @param \2 r8 low destination
+; @param \3 r16 source register.
+;;;
+_ld16: macro
+    IF "\3" == "BC"
+        ld \1, B
+        ld \2, C
+    ELIF "\3" == "DE"
+        ld \1, D
+        ld \2, E
+    ELIF "\3" == "HL"
+        ld \1, H
+        ld \2, L
+    ELSE
+        FAIL ("Not a valid 16bit register")
+    ENDC
+endm
+
+
+;;;
 ; Loads a 16 bit register
 ;
-; ld16 r16high,r16low, r16high,r16low
+; ld16 r16, r16
 ; Cycles: 2
 ; Bytes: 2
 ; Flags: None
-;
-; ld16 r16high,r16low, n8,n8
-; 
-;
-; @example - ld16 H,L, B,C
-; @notes - rgbasm has the conditional assembly directive IF - I thought I would be able to be like 
-; IF (\2 == BC) 
-;    \3 = B 
-;    \4 = C 
-; ENDC
-; so that this could be called as ld16 HL, BC.
-; But no, it seems IFs can only be used with integer constants, so I'm stuck with this syntax until I feel like forking rednex 
 ;;;
 ld16: macro
-    ld \1, \3
-    ld \2, \4
+    IF "\1" == "BC"
+        _ld16 B, C, \2
+    ELIF "\1" == "DE"
+        _ld16 D, E, \2
+    ELIF "\1" == "HL"
+        _ld16 H, L, \2
+    ELSE
+        FAIL("Not a valid 16bit register.")
+    ENDC
 endm
 
 ;;;
@@ -538,32 +556,47 @@ ld16AR: macro
 endm
 
 ;;;
-; Subtracts one 16 bit register from another with result in \1,\2.
-; 
-; sub16 r16high,r16low, r16high,r16low
-; Cycles: 6
-; Bytes: 6
-; Flags: Z=? N=1 H=? C=?
-;
-; @example - sub16 H,L, B,C
-; @notes - rgbasm has the conditional assembly directive IF - I thought I would be able to be like 
-; IF (\2 == BC) 
-;    \3 = B 
-;    \4 = C 
-; ENDC
-; so that this could be called as sub16 HL, BC.
-; But no, it seems IFs can only be used with integer constants, so I'm stuck with this syntax until I feel like forking rednex.
+; Internal macros for sub16
 ;;;
-sub16: macro
+__sub16: macro
     ld A, \2
     sub \4
     ld \2, A
     ld A, \1
     sbc \3
-    ld \1, A 
+    ld \1, A
+endm
+_sub16: macro
+    IF "\3" == "BC"
+        __sub16 \1, \2, B, C
+    ELIF "\3" == "DE"
+        __sub16 \1, \2, D, E
+    ELIF "\3" == "HL"
+        __sub16 \1, \2, H, L
+    ELSE
+        FAIL ("Not a valid 16 bit register")
+    ENDC
 endm
 
-
+;;;
+; Subtracts one 16 bit register from another with result in \1
+; 
+; sub16 r16, r16
+; Cycles: 6
+; Bytes: 6
+; Flags: Z=? N=1 H=? C=?
+;;;
+sub16: macro
+    IF "\1" == "BC"
+        _sub16 B, C, \2
+    ELIF "\1" == "DE"
+        _sub16 D, E, \2
+    ELIF "\1" == "HL"
+        _sub16 H, L, \2
+    ELSE
+        FAIL ("Not a valid 16 bit register")
+    ENDC
+endm
 
 ;;;
 ; Adds two 16bit registers together. Result in the first.
@@ -577,5 +610,5 @@ add16: macro
     adc \3
     ld \1, A
 endm
-    
+
     ENDC
