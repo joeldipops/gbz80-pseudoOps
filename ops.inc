@@ -169,7 +169,22 @@ endm
 ; Bytes: 4
 ; Flags: None
 ;
-; ldHLi [HL], n8
+; ldiAny [HL], n8
+; Cycles: 6
+; Bytes: 4
+; Flags: None
+;
+; ldiAny [HL], r8
+; Cycles: 3
+; Bytes: 2
+; Flags: None
+;
+; ldiAny [HL], [r16]
+; Cycles: 6
+; Bytes: 4
+; Flags: None
+;
+; ldiAny [HL], [n16]
 ; Cycles: 6
 ; Bytes: 4
 ; Flags: None
@@ -493,28 +508,6 @@ decAny: macro
 endm
 
 ;;;
-; internal macro for ld16 to deal with the second register.
-; @param \1 r8 high desitnation
-; @param \2 r8 low destination
-; @param \3 r16 source register.
-;;;
-_ld16: macro
-    IF "\3" == "BC"
-        ld \1, B
-        ld \2, C
-    ELIF "\3" == "DE"
-        ld \1, D
-        ld \2, E
-    ELIF "\3" == "HL"
-        ld \1, H
-        ld \2, L
-    ELSE
-        FAIL ("Not a valid 16bit register")
-    ENDC
-endm
-
-
-;;;
 ; Loads a 16 bit register
 ;
 ; ld16 r16, r16
@@ -523,15 +516,8 @@ endm
 ; Flags: None
 ;;;
 ld16: macro
-    IF "\1" == "BC"
-        _ld16 B, C, \2
-    ELIF "\1" == "DE"
-        _ld16 D, E, \2
-    ELIF "\1" == "HL"
-        _ld16 H, L, \2
-    ELSE
-        FAIL("Not a valid 16bit register.")
-    ENDC
+    ld LOW(\1), LOW(\2)
+    ld HIGH(\1), HIGH(\2)
 endm
 
 ;;;
@@ -546,36 +532,13 @@ ld16RA: macro
 endm
 
 ;;;
-; Loads a 16bit regisuter in to memory
+; Loads a 16bit register in to memory
 ;;;
 ld16AR: macro
     ld A, \2
     ld [\1], A
     ld A, \3
     ld [\3 + 1], A
-endm
-
-;;;
-; Internal macros for sub16
-;;;
-__sub16: macro
-    ld A, \2
-    sub \4
-    ld \2, A
-    ld A, \1
-    sbc \3
-    ld \1, A
-endm
-_sub16: macro
-    IF "\3" == "BC"
-        __sub16 \1, \2, B, C
-    ELIF "\3" == "DE"
-        __sub16 \1, \2, D, E
-    ELIF "\3" == "HL"
-        __sub16 \1, \2, H, L
-    ELSE
-        FAIL ("Not a valid 16 bit register")
-    ENDC
 endm
 
 ;;;
@@ -587,28 +550,31 @@ endm
 ; Flags: Z=? N=1 H=? C=?
 ;;;
 sub16: macro
-    IF "\1" == "BC"
-        _sub16 B, C, \2
-    ELIF "\1" == "DE"
-        _sub16 D, E, \2
-    ELIF "\1" == "HL"
-        _sub16 H, L, \2
-    ELSE
-        FAIL ("Not a valid 16 bit register")
-    ENDC
+    ld A, LOW(\1)
+    sub LOW(\2)
+    ld LOW(\1), A
+
+    ld A, HIGH(\1)
+    sbc HIGH(\2)
+    ld HIGH(\1), A
 endm
 
 ;;;
 ; Adds two 16bit registers together. Result in the first.
-; add16 r16high,r16low, r16high,r16low
+;
+; add16 r16, r16
+; Cycles: 6
+; Bytes: 6
+; Flags: Z=? N=0 H=? C=?
 ;;;
 add16: macro
-    ld A, \2
-    add \4
-    ld \2, A
-    ld A, \1
-    adc \3
-    ld \1, A
+    ld A, LOW(\1)
+    add LOW(\2)
+    ld LOW(\1), A 
+
+    ld A, HIGH(\1)
+    adc HIGH(\2)
+    ld HIGH(\1), A
 endm
 
     ENDC
