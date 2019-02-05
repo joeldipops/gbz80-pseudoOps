@@ -137,6 +137,24 @@ Symbol|Def
 * Bytes: 4
 * Flags: None
 
+**ldiAny [HL], r8**
+* Storevalue of *r8* into address pointed to by **HL** then increments **HL**
+* Cycles: 3
+* Bytes: 2
+* Flags: None
+
+**ldiAny [HL], [r16]**
+* Store value at address pointed to by *n16* in to address pointed to by **HL** then increments **HL**
+* Cycles: 4
+* Bytes: 2
+* Flags: None
+
+**ldiAny [HL], [n16]**
+* Store value at address *n16* in to address pointed to by **HL** then increments **HL**
+* Cycles: 6
+* Bytes: 4
+* Flags: None
+
 ### orAny
 
 **orAny r8, r8**
@@ -603,19 +621,18 @@ Symbol|Def
 
 ### ld16
 
-**ld16 r16high,r16low, r16high,r16low**
-* Stores the value of the register made from the combination of *r16high* and *r16low* into another 16bit register. 
-* eg. ld16 H,L, B,C
+**ld16 r16, r16**
+* Stores the value of one 16 bit register in to another.
+* eg. ld16 HL, BC
 * Cycles: 2
 * Bytes: 2
 * Flags: None
 
 ### sub16
 
-**sub16 r16high,r16low, r16high,r16low**
-*
-* eg. sub16 H,L, B,C
-* Side Effects: TBC
+**sub16 r16, r16**
+* Subtracts the value of 1 16bit register from another and stores the result into the first register.
+* eg. sub16 HL, BC
 * Cycles: 6
 * Bytes: 6
 * Flags: TBC
