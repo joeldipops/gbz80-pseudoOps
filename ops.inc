@@ -507,6 +507,8 @@ decAny: macro
     ld \1, A
 endm
 
+R16 EQUS "\"BC DE HL\""
+
 ;;;
 ; Loads a 16 bit register
 ;
@@ -516,29 +518,23 @@ endm
 ; Flags: None
 ;;;
 ld16: macro
-    ld LOW(\1), LOW(\2)
-    ld HIGH(\1), HIGH(\2)
-endm
-
-;;;
-; Loads a 16bit block of memory in to r16
-; ld16RA r16high,r16low, n16
-;;;
-ld16RA: macro
-    ld A, [\3]
-    ld \1, A
-    ld A, [\3 + 1]
-    ld \2, A
-endm
-
-;;;
-; Loads a 16bit register in to memory
-;;;
-ld16AR: macro
-    ld A, \2
-    ld [\1], A
-    ld A, \3
-    ld [\3 + 1], A
+    IF (STRLEN("\1") == 2 && STRIN(R16, "\1") != 0) && (STRLEN("\2") == 2 && STRIN(R16, "\2") != 0)
+        ; If both operands are registers
+        ld LOW(\1), LOW(\2)
+        ld HIGH(\1), HIGH(\2)
+    ELIF STRLEN("\1") == 2 && STRIN(R16, "\1") != 0
+        ; If first operand is a register
+        ldAny HIGH(\1), [\2]
+        ldAny LOW(\1), [\2 + 1]
+    ELIF STRLEN("\2") == 2 && STRIN(R16, "\2") != 0        
+        ; If second operand is a register
+        ldAny [\1], HIGH(\2)
+        ldAny [\1 + 1], LOW(\2)
+    ELSE
+        ; If both are addresses
+        ldAny [\1], [\2]
+        ldAny [\1 + 1], [\2 + 1]
+    ENDC
 endm
 
 ;;;
