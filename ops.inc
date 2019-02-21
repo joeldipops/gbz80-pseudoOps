@@ -55,20 +55,20 @@ mult: macro
 
     ; If either of the operands are 0, return 0
     or B
-        jr Z, .end
+        jr Z, .end\@
     or C
-        jr Z, .end
+        jr Z, .end\@
 
     xor A
-.loop
+.loop\@
         ; TODO can we use `add HL, r16`??
         add A, C
         ld L, A
         adcAny H, 0
         dec B
         ld A, L
-    jr NZ, .loop
-.end
+    jr NZ, .loop\@
+.end\@
     ; Ensures flags set consistently.
     xor A
     pop BC
@@ -576,4 +576,72 @@ add16: macro
     ld HIGH(\1), A
 endm
 
+;;;
+; Jumps to address n16 if in previous cp, sub or sbc, A < x
+; jplt n16
+; Cycles: 4 if jump occurs, 3 otherwise
+; Bytes: 3
+; Flags:
+;;;
+jplt: macro
+    jp C, \1
+endm
+
+;;;
+; Jumps to address n16 if in previous cp, sub or sbc, A <= x
+; jplte n16
+; Cycles: 4 - 7 depending on result
+; Bytes: 6
+; Flags: None
+;;;
+jplte: macro
+    jp C, \1
+    jp Z, \1
+endm
+
+;;;
+; Jumps to address n16 if in previous cp, sub or sbc, A > x
+; jpgt n16
+; Cycles: 3 - 6 depending on result.
+; Bytes: 5
+; Flags: None
+;;;
+jpgt: macro
+    jr C, .end\@
+    jp NZ, \1
+.end\@
+endm
+
+;;;
+; Jumps to address n16 if in previous cp, sub or sbc, A >= x
+; jpgte n16
+; Cycles: 4 if jump occurs, 3 otherwise
+; Bytes: 3
+; Flags: None
+;;;
+jpgte: macro
+  jp NC, \1
+endm
+
+;;;
+; Jumps to address n16 if in previous cp, sub or sbc, A = x
+; jpeq n16
+; Cycles: 4 if jump occurs, 3 otherwise
+; Bytes: 3
+; Flags: None
+;;;
+jpeq: macro
+  jp Z, \1
+endm
+
+;;;
+; Jumps to address n16 if in previous cp, sub or sbc, A != x
+; jpne n16
+; Cycles: 4 if jump occurs, 3 otherwise
+; Bytes: 3
+; Flags: None
+;;;
+jpne: macro
+    jp NZ, \1
+endm
     ENDC
