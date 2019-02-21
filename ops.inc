@@ -51,6 +51,7 @@ mult: macro
     ld HL, 0
     ld B, \1
     ld C, \2
+    xor A
 
     ; If either of the operands are 0, return 0
     or B
@@ -58,7 +59,7 @@ mult: macro
     or C
         jr Z, .end
 
-    ld A, 0
+    xor A
 .loop
         ; TODO can we use `add HL, r16`??
         add A, C
@@ -68,6 +69,8 @@ mult: macro
         ld A, L
     jr NZ, .loop
 .end
+    ; Ensures flags set consistently.
+    xor A
     pop BC
 endm
 

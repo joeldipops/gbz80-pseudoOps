@@ -633,22 +633,22 @@ n16 here is the address, not a literal, which would normally be written [n16].  
 **ld16 r16, n16**
 * Stores the 16bit value at address n16 and following byte in to register r16
 * eg. ld16 HL, $c123
-* Cycles: 
-* Bytes: 
+* Cycles: 10
+* Bytes: 8
 * Flags: None
 
 **ld16 n16, r16**
 * Stores the value in r16 to address n16 and following address
 * eg. ld16 $c123, HL
-* Cycles: 
-* Bytes: 
+* Cycles: 10
+* Bytes: 8
 * Flags: None
 
 **ld16 n16, n16**
 * Stores the 16bit value at one address n16 (and next address) in to another address n16 and next address.
 * eg. ld16 $d321, $c123
-* Cycles: 
-* Bytes: 
+* Cycles: 10
+* Bytes: 8
 * Flags: None
 
 ### sub16
@@ -658,21 +658,31 @@ n16 here is the address, not a literal, which would normally be written [n16].  
 * eg. sub16 HL, BC
 * Cycles: 6
 * Bytes: 6
-* Flags: TBC
+* Flags: 
+    * Z: Set if value in high byte is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 11, set otherwise.
+    * C: Set if first *r16* < second *r16*, reset otherwise.
 
 ### mult 
 
 **mult r8, r8**
 * Multiplies numbers in two registers *r8*.  Result in **HL**.
-* Side Effects: TBC
 * Cycles: Depends on value of operands.
-* Bytes: TBC
-* Flags: TBC
+* Bytes: 24
+* Flags:
+    * Z: 0
+    * N: 0
+    * H: 0
+    * C: 0
 
 **mult r8, n8**
 * Multiplies value in *r8* with *n8*.  Result in **HL**.
-* Side Effects: TBC
 * Cycles: Depends on value of operands.
-* Bytes: TBC
-* Flags: TBC
+* Bytes: 26
+* Flags:
+    * Z: 0
+    * N: 0
+    * H: 0
+    * C: 0
 
