@@ -58,7 +58,7 @@ mult: macro
 
     ; If either of the operands are 0, return 0
     ld A, B
-    or C
+    and C
         jr Z, .end\@
 
     xor A
