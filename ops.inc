@@ -25,7 +25,7 @@ endm
 
 ;;;
 ; Inserts a null terminated string into ROM
-; dbs string
+; dbs string, ...
 ; Bytes: Length of String + 1
 ; Cycles: N/A
 ; Flags: N/A
