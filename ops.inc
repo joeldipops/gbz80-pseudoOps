@@ -55,10 +55,14 @@ mult: macro
     ld HL, 0
     ld B, \1
     ld C, \2
+    xor A
 
     ; If either of the operands are 0, return 0
-    ld A, B
-    and C
+    or B
+        jr Z, .end\@	
+
+    xor A        
+    or C
         jr Z, .end\@
 
     xor A
