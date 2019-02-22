@@ -1,6 +1,8 @@
     IF !DEF(PSEUDO_OPS_INCLUDED)
 PSEUDO_OPS_INCLUDED SET 1
 
+R16 EQUS "\"BC DE HL\""
+
 ;;;
 ; Adds two values, Result in r8
 ; addAny r8, [r16]
@@ -29,7 +31,11 @@ endm
 ; Flags: N/A
 ;;;
 dbs: macro
-    db \1,0
+    REPT _NARG
+        db \1
+        SHIFT
+    ENDR
+    db 0
 endm
 
 ;;;
@@ -43,35 +49,53 @@ pushAny: macro
 endm
 
 ;;;
-; mult r8, r8
+; mult r8, ?r16
 ; Multiples two numbers, result in HL
 ;;;
 mult: macro
-    push BC
-    ld HL, 0
-    ld B, \1
-    ld C, \2
-    xor A
+HAS_SIDE_AFFECTS SET 0
+VALUE EQUS "\1"
+    ; If a second param is supplied, use that as our temp register and don't both pushpopping
+    IF _NARG == 2
+        SHIFT
+TEMP EQUS "\1"
+        ; I should be able to use || here, but my second condition was never true, despite working as expected im the ELIF
+        IF STRLEN("{TEMP}") == 2 && STRIN(R16, "{TEMP}") == 0
+            FAIL "r16 must be either BC or DE"
+        ELIF "{TEMP}" == "HL"
+            FAIL "r16 must be either BC or DE"
+        ENDC
+    ELSE
+TEMP EQUS "BC"
+HAS_SIDE_AFFECTS SET 1        
+        push BC
+    ENDC
 
-    ; If either of the operands are 0, return 0
-    or B
-        jr Z, .end\@
-    or C
+    ld HIGH(TEMP), 0
+    ld LOW(TEMP), A
+    ld H, HIGH(TEMP)
+    ld L, HIGH(TEMP)
+
+    ; If either operand is 0, finish now.
+    or A
         jr Z, .end\@
 
-    xor A
+    ld A, VALUE
+    or A
+        jr Z, .end\@
+
 .loop\@
-        ; TODO can we use `add HL, r16`??
-        add A, C
-        ld L, A
-        adcAny H, 0
-        dec B
-        ld A, L
-    jr NZ, .loop\@
+        add HL, TEMP
+        dec A
+        jr NZ, .loop\@
+
 .end\@
-    ; Ensures flags set consistently.
-    xor A
-    pop BC
+
+    IF HAS_SIDE_AFFECTS == 1
+        pop BC
+    ENDC
+    PURGE VALUE
+    PURGE TEMP
 endm
 
 ;;;
@@ -200,7 +224,7 @@ ldiAny: macro
         ldi A, [HL]
         ld \1, A
     ELSE
-        FAIL("ldi requires [HL]")
+        FAIL "ldi requires [HL]"
     ENDC
 endm
 
@@ -509,8 +533,6 @@ decAny: macro
     dec A
     ld \1, A
 endm
-
-R16 EQUS "\"BC DE HL\""
 
 ;;;
 ; Loads a 16 bit register

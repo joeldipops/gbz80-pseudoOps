@@ -669,23 +669,24 @@ n16 here is the address, not a literal, which would normally be written [n16].  
 
 ### mult 
 
-**mult r8, r8**
-* Multiplies numbers in two registers *r8*.  Result in **HL**.
+**mult r8, ?r16**
+* Multiplies **A** with register *r8*.  Result in **HL**.
+* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
 * Cycles: Depends on value of operands.
-* Bytes: 24
+* Bytes: 16/18
 * Flags:
-    * Z: 0
-    * N: 0
+    * Z: 1
+    * N: Set if result is non-zero, reset otherwise
     * H: 0
     * C: 0
 
-**mult r8, n8**
-* Multiplies value in *r8* with *n8*.  Result in **HL**.
+**mult n8, ?r16**
+* Multiplies **A** with *n8*.  Result in **HL**.
+* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
 * Cycles: Depends on value of operands.
 * Bytes: 26
-* Flags:
-    * Z: 0
-    * N: 0
+* Flags: 17/19
+    * Z: 1
+    * N: Set if result is non-zero, reset otherwise
     * H: 0
     * C: 0
-
