@@ -23,7 +23,7 @@ endm
 
 ;;;
 ; Inserts a null terminated string into ROM
-; dbs bits,of,string
+; dbs string, ...
 ; Bytes: Length of String + 1
 ; Cycles: N/A
 ; Flags: N/A
@@ -31,6 +31,7 @@ endm
 dbs: macro
     REPT _NARG
         db \1
+        SHIFT
     ENDR
     db 0
 endm
