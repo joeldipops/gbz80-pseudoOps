@@ -58,7 +58,8 @@ mult: macro
     ; If either of the operands are 0, return 0
     xor A
     add B
-        jr Z, .end\@	
+        jr Z, .end\@
+    xor A
     add C
         jr Z, .end\@
 
