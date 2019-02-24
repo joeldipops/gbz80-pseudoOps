@@ -53,49 +53,49 @@ endm
 ; Multiples two numbers, result in HL
 ;;;
 mult: macro
-HAS_SIDE_AFFECTS SET 0
-VALUE EQUS "\1"
+HAS_SIDE_AFFECTS\@ SET 0
+VALUE\@ EQUS "\1"
     ; If a second param is supplied, use that as our temp register and don't both pushpopping
     IF _NARG == 2
         SHIFT
-TEMP EQUS "\1"
+TEMP\@ EQUS "\1"
         ; I should be able to use || here, but my second condition was never true, despite working as expected im the ELIF
-        IF STRLEN("{TEMP}") == 2 && STRIN(R16, "{TEMP}") == 0
+        IF STRLEN("{TEMP\@}") == 2 && STRIN(R16, "{TEMP\@}") == 0
             FAIL "r16 must be either BC or DE"
-        ELIF "{TEMP}" == "HL"
+        ELIF "{TEMP\@}" == "HL"
             FAIL "r16 must be either BC or DE"
         ENDC
     ELSE
-TEMP EQUS "BC"
-HAS_SIDE_AFFECTS SET 1        
+TEMP\@ EQUS "BC"
+HAS_SIDE_AFFECTS\@ SET 1        
         push BC
     ENDC
 
-    ld HIGH(TEMP), 0
-    ld LOW(TEMP), A
-    ld H, HIGH(TEMP)
-    ld L, HIGH(TEMP)
+    ld HIGH(TEMP\@), 0
+    ld LOW(TEMP\@), A
+    ld H, HIGH(TEMP\@)
+    ld L, HIGH(TEMP\@)
 
     ; If either operand is 0, finish now.
     or A
         jr Z, .end\@
 
-    ld A, VALUE
+    ld A, VALUE\@
     or A
         jr Z, .end\@
 
 .loop\@
-        add HL, TEMP
+        add HL, TEMP\@
         dec A
         jr NZ, .loop\@
 
 .end\@
 
-    IF HAS_SIDE_AFFECTS == 1
+    IF HAS_SIDE_AFFECTS\@ == 1
         pop BC
     ENDC
-    PURGE VALUE
-    PURGE TEMP
+    PURGE VALUE\@
+    PURGE TEMP\@
 endm
 
 ;;;
