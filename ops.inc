@@ -2,6 +2,7 @@
 PSEUDO_OPS_INCLUDED SET 1
 
 R16 EQUS "\"BC DE HL\""
+R8 EQUS "\"A B C D E H L\""
 
 ;;;
 ; Adds two values, Result in r8
@@ -49,8 +50,14 @@ pushAny: macro
 endm
 
 ;;;
+; Multiples A with another value, result in HL
 ; mult r8, ?r16
-; Multiples two numbers, result in HL
+;
+; mult n8, ?r16
+;
+; mult [r16], ?r16
+;
+; mult [n16], ?r16
 ;;;
 mult: macro
 HAS_SIDE_AFFECTS\@ SET 0
@@ -90,12 +97,23 @@ HAS_SIDE_AFFECTS\@ SET 1
         jr NZ, .loop\@
 
 .end\@
-
     IF HAS_SIDE_AFFECTS\@ == 1
         pop BC
     ENDC
-    PURGE VALUE\@
-    PURGE TEMP\@
+endm
+
+;;;
+; Multiples two values, result in HL
+; mult v8, v8, ?r16
+;;;
+multAny: macro
+    ld A, \1
+    IF _NARG == 3
+        SHIFT
+        mult \1, \2
+    ELSE
+        mult \2
+    ENDC
 endm
 
 ;;;
@@ -541,24 +559,46 @@ endm
 ; Cycles: 2
 ; Bytes: 2
 ; Flags: None
+;
+; ld16 r16, [n16]
+; 
 ;;;
 ld16: macro
-    IF (STRLEN("\1") == 2 && STRIN(R16, "\1") != 0) && (STRLEN("\2") == 2 && STRIN(R16, "\2") != 0)
-        ; If both operands are registers
-        ld LOW(\1), LOW(\2)
-        ld HIGH(\1), HIGH(\2)
-    ELIF STRLEN("\1") == 2 && STRIN(R16, "\1") != 0
-        ; If first operand is a register
-        ldAny HIGH(\1), [\2]
-        ldAny LOW(\1), [\2 + 1]
-    ELIF STRLEN("\2") == 2 && STRIN(R16, "\2") != 0        
-        ; If second operand is a register
-        ldAny [\1], HIGH(\2)
-        ldAny [\1 + 1], LOW(\2)
+IS_P1_R16\@ SET (STRLEN("\1") == 2 && STRIN(R16, "\1") != 0)
+IS_P2_R16\@ SET (STRLEN("\2") == 2 && STRIN(R16, "\2") != 0)
+
+    ; Remove the square brackets around \2 so we can find the following address ie. [\2 + 1]
+    IF ((STRIN("\2", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")))
+P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 2)
+    ELSE
+P2\@ EQUS "\2"
+    ENDC    
+
+    IF IS_P1_R16\@
+        IF IS_P2_R16\@
+            ; If both operands are registers
+            ld LOW(\1), LOW(\2)
+            ld HIGH(\1), HIGH(\2)
+        ELSE
+            ; If only first operand is a register
+            ldAny HIGH(\1), [P2\@]
+            ldAny LOW(\1), [P2\@ + 1]
+        ENDC
+    ELIF IS_P2_R16\@
+        ; Remove the square brackets around \1 so we can find the following address ie. [\1 + 1]
+        IF STRIN("\1", "[") == 1 && STRIN("\1", "]") == STRLEN("\1")
+P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)
+        ELSE
+P1\@ EQUS "\1"
+        ENDC
+
+        ; If only second operand is a register
+        ldAny [P1\@], HIGH(\2)
+        ldAny [P1\@ + 1], LOW(\2)
     ELSE
         ; If both are addresses
-        ldAny [\1], [\2]
-        ldAny [\1 + 1], [\2 + 1]
+        ldAny [P1\@], [P2\@]
+        ldAny [P1\@ + 1], [P2\@ + 1]
     ENDC
 endm
 
@@ -642,7 +682,7 @@ endm
 ; Flags: None
 ;;;
 jpgte: macro
-  jp NC, \1
+    jp NC, \1
 endm
 
 ;;;
@@ -653,7 +693,7 @@ endm
 ; Flags: None
 ;;;
 jpeq: macro
-  jp Z, \1
+    jp Z, \1
 endm
 
 ;;;

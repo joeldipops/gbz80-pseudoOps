@@ -53,10 +53,10 @@ updateSprite: macro
         ldAny [OAMStage + (\1 * SPRITE_SIZE) + 1], \5        
     ELSE
         ld HL, OAMStage + (\1 * SPRITE_SIZE)
-        ldHLi [HL], \3
-        ldHLi [HL], \2
-        ldHLi [HL], \4
-        ldHLi [HL], \5
+        ldiAny [HL], \3
+        ldiAny [HL], \2
+        ldiAny [HL], \4
+        ldiAny [HL], \5
     ENDC
 endm
 

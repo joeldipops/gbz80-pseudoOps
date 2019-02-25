@@ -624,8 +624,6 @@ Symbol|Def
 
 ### ld16
 
-n16 here is the address, not a literal, which would normally be written [n16].  However for technical reasons, we need to pass the address as a number.  However, this can still be a label or constant, the only difference is the lack of square brackets.
-
 **ld16 r16, r16**
 * Stores the value of one 16 bit register in to another.
 * eg. ld16 HL, BC
@@ -633,22 +631,22 @@ n16 here is the address, not a literal, which would normally be written [n16].  
 * Bytes: 2
 * Flags: None
 
-**ld16 r16, n16**
-* Stores the 16bit value at address n16 and following byte in to register r16
+**ld16 r16, [n16]**
+* Stores the 16bit value at address *n16* and following byte in to register r16
 * eg. ld16 HL, $c123
 * Cycles: 10
 * Bytes: 8
 * Flags: None
 
-**ld16 n16, r16**
-* Stores the value in r16 to address n16 and following address
+**ld16 [n16], r16**
+* Stores the value in *r16* to address *n16* and following address
 * eg. ld16 $c123, HL
 * Cycles: 10
 * Bytes: 8
 * Flags: None
 
-**ld16 n16, n16**
-* Stores the 16bit value at one address n16 (and next address) in to another address n16 and next address.
+**ld16 [n16], [n16]**
+* Stores the 16bit value at one address *n16* (and next address) in to another address *n16* and next address.
 * eg. ld16 $d321, $c123
 * Cycles: 10
 * Bytes: 8
