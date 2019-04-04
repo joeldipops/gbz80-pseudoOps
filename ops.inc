@@ -7,10 +7,19 @@ R8 EQUS "\"A B C D E H L\""
 ;;;
 ; Adds two values, Result in r8
 ; addAny r8, [r16]
+;
+; addAny r8, [n16]
+;
 ;;;;
 addAny: macro
-    ld A, \1
-    add \2
+IS_P2_N16\@ SET ((STRIN("\2", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")) && (STRIN(R16, "\2") != 0 || STRLEN("\2") != 4))
+    IF IS_P2_N16\@
+        ld A, \2
+        add A, \1
+    ELSE
+        ld A, \1
+        add A, \2
+    ENDC
     ld \1, A 
 endm
 
@@ -66,10 +75,7 @@ VALUE\@ EQUS "\1"
     IF _NARG == 2
         SHIFT
 TEMP\@ EQUS "\1"
-        ; I should be able to use || here, but my second condition was never true, despite working as expected im the ELIF
-        IF STRLEN("{TEMP\@}") == 2 && STRIN(R16, "{TEMP\@}") == 0
-            FAIL "r16 must be either BC or DE"
-        ELIF "{TEMP\@}" == "HL"
+        IF !("{TEMP\@}" == "BC") || ("{TEMP\@}" == "DE")
             FAIL "r16 must be either BC or DE"
         ENDC
     ELSE
@@ -78,17 +84,28 @@ HAS_SIDE_AFFECTS\@ SET 1
         push BC
     ENDC
 
-    ld HIGH(TEMP\@), 0
-    ld LOW(TEMP\@), A
-    ld H, HIGH(TEMP\@)
-    ld L, HIGH(TEMP\@)
+    IF ("{VALUE\@}" == "[HL]") || ("{VALUE\@}" == "H") || ("{VALUE\@}" == "L")
+        FAIL "multiplying by H or L is not yet implemented."
+    ENDC
+
+    ;IF ("{VALUE\@}" == "[HL]") || ("{VALUE\@}" == "H") || ("{VALUE\@}" == "L")    
+    ;    push HL
+    ;    ld H, 0
+    ;    ld L, A
+     ;   pop TEMP\@
+    ;ELSE
+        ld HIGH(TEMP\@), 0
+        ld LOW(TEMP\@), A
+        ld H, HIGH(TEMP\@)
+        ld L, HIGH(TEMP\@)
+    ;ENDC
 
     ; If either operand is 0, finish now.
-    or A
+    or A, A
         jr Z, .end\@
 
     ld A, VALUE\@
-    or A
+    or A, A
         jr Z, .end\@
 
 .loop\@
@@ -118,6 +135,12 @@ endm
 
 ;;;
 ; Loads byte from anywhere to anywhere else that takes a byte.
+;
+; ldAny [r16], 0
+; Cycles:
+; Bytes:
+; Flags: None
+;
 ; ldAny r8, [n16]
 ; Cycles: 5 
 ; Bytes: 4 
@@ -165,8 +188,12 @@ endm
 ;
 ;;;
 ldAny: macro
-    ld A, \2
-    ld \1, A
+    IF "\2"  == "0"
+        xor A, A
+    ELSE
+        ld A, \2
+    ENDC
+    ld \1 , A
 endm
 
 ;;;
@@ -296,7 +323,12 @@ endm
 ;;;
 orAny: macro
     ld A, \1
-    or \2
+    IF "\1" == "\2"
+        ; Idiot proofing phase 1
+        or A, A
+    ELSE
+        or A, \2
+    ENDC
 endm
 
 ;;;
@@ -349,7 +381,7 @@ endm
 ;;;
 andAny: macro
     ld A, \1
-    and \2
+    and A, \2
 endm
 
 ;;;
@@ -402,7 +434,7 @@ endm
 ;;;
 xorAny: macro
     ld A, \1
-    xor \2
+    xor A, \2
 endm
 
 ;;;
@@ -564,6 +596,10 @@ endm
 ; 
 ;;;
 ld16: macro
+    IF (("\2" == "[HL]") || ("\2" == "[BC]")  || ("\2" == "[DE]"))
+        FAIL "register indirection not yet implemented"
+    ENDC
+
 IS_P1_R16\@ SET (STRLEN("\1") == 2 && STRIN(R16, "\1") != 0)
 IS_P2_R16\@ SET (STRLEN("\2") == 2 && STRIN(R16, "\2") != 0)
 
@@ -612,13 +648,117 @@ endm
 ;;;
 sub16: macro
     ld A, LOW(\1)
-    sub LOW(\2)
+    sub A, LOW(\2)
     ld LOW(\1), A
 
     ld A, HIGH(\1)
     sbc HIGH(\2)
     ld HIGH(\1), A
 endm
+
+;;;
+; Shifts a 16 bit register to the left
+;
+; sl16 r16
+;;;
+sl16: macro
+    IF "\1" == "HL"
+        add HL, HL
+    ELSE
+        FAIL "sl16 BC and sl16 DE not yet implemented"
+    ENDC
+endm
+
+;;;
+; and16 r16 r16
+; result in HL
+;;;
+and16: macro
+IS_P1_R16\@ SET (STRIN(R16, "\1") != 0) && (STRLEN("\1") == 2)
+IS_P2_R16\@ SET (STRIN(R16, "\2") != 0) && (STRLEN("\2") == 2)
+
+    IF IS_P1_R16\@ 
+        IF IS_P2_R16\@
+            andAny LOW(\1), LOW(\2)
+            ld L, A
+            andAny HIGH(\1), HIGH(\2)
+            ld H, A
+        ELSE
+            FAIL "Not yet implemented"
+        ENDC
+    ELSE
+        FAIL "Not yet implemented"
+    ENDC
+endm
+
+;;;
+; and16 r16 r16
+; result in HL
+;;;
+or16: macro
+IS_P1_R16\@ SET (STRIN(R16, "\1") != 0) && (STRLEN("\1") == 2)
+IS_P2_R16\@ SET (STRIN(R16, "\2") != 0) && (STRLEN("\2") == 2)
+
+    IF IS_P1_R16\@ 
+        IF IS_P2_R16\@
+            orAny LOW(\1), LOW(\2)
+            ld L, A
+            orAny HIGH(\1), HIGH(\2)
+            ld H, A
+        ELSE
+            FAIL "Not yet implemented"
+        ENDC
+    ELSE
+        FAIL "Not yet implemented"
+    ENDC
+endm
+
+
+
+;;;
+; Shifts a 16bit register to the right.
+;
+; sr16 r16
+;;;
+sr16: macro
+    IF (STRLEN("\1")) != 2 || (STRIN(R16, "\1") == 0)
+        FAIL "Must be used with a 16bit register"
+    ENDC
+
+    sra HIGH(\1)
+    jr NC, .noCarry\@
+        sra LOW(\1)
+        ; high bit carried, so bit 7 should be set
+        set 7, LOW(\1)
+        jr .end\@
+.noCarry\@
+        ; shift will leave bit 7 as 0, matching the high bit since it didn't carry.
+        sra LOW(\1)
+.end\@
+endm
+
+;;;
+; Rotates a 16 bit register to the right.
+;
+; [0] -> [7 ->> 0] -> [7], C
+; rrc16 r16
+;;;
+rrc16: macro
+    IF (STRLEN("\1")) != 2 || (STRIN(R16, "\1") == 0)
+        FAIL "Must be used with a 16bit register"
+    ENDC
+
+    rrc LOW(\1)
+    rr HIGH(\1)
+    jr NC, .noCarry\@
+        set 7, LOW(\1)
+        jr .end\@
+.noCarry\@
+        res 7, LOW(\1)
+.end\@
+endm
+
+
 
 ;;;
 ; Adds two 16bit registers together. Result in the first.
@@ -630,11 +770,11 @@ endm
 ;;;
 add16: macro
     ld A, LOW(\1)
-    add LOW(\2)
+    add A, LOW(\2)
     ld LOW(\1), A 
 
     ld A, HIGH(\1)
-    adc HIGH(\2)
+    adc A, HIGH(\2)
     ld HIGH(\1), A
 endm
 
