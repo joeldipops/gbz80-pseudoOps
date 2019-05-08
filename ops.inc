@@ -726,15 +726,7 @@ sr16: macro
     ENDC
 
     sra HIGH(\1)
-    jr NC, .noCarry\@
-        sra LOW(\1)
-        ; high bit carried, so bit 7 should be set
-        set 7, LOW(\1)
-        jr .end\@
-.noCarry\@
-        ; shift will leave bit 7 as 0, matching the high bit since it didn't carry.
-        sra LOW(\1)
-.end\@
+    rr LOW(\1)
 endm
 
 ;;;
@@ -748,14 +740,10 @@ rrc16: macro
         FAIL "Must be used with a 16bit register"
     ENDC
 
-    rrc LOW(\1)
+    rr LOW(\1)
     rr HIGH(\1)
-    jr NC, .noCarry\@
-        set 7, LOW(\1)
-        jr .end\@
-.noCarry\@
-        res 7, LOW(\1)
-.end\@
+    rl LOW(\1)
+    rrc LOW(\1)
 endm
 
 
