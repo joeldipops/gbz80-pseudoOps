@@ -1,6 +1,7 @@
     IF !DEF(PSEUDO_OPS_INCLUDED)
 PSEUDO_OPS_INCLUDED SET 1
 
+N8 EQUS "\"$ % 0 1 2 3 4 5 6 7 8 9\""
 R16 EQUS "\"BC DE HL bc de hl\""
 R8 EQUS "\"A B C D E H L a b c d e h l\""
 
@@ -200,16 +201,16 @@ ldAny: macro
     IF ((STRIN("\1", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1")))
 P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)    
     ELSE
-P1\@ EQUS "\1"
+P1\@ EQUS "0"
     ENDC
 
     IF ((STRIN("\2", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")))
 P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 2)    
     ELSE
-P2\@ EQUS "\2"
+P2\@ EQUS "0"
     ENDC
 
-    ; If loading two or from A, we only need a single instruction.
+    ; If loading to or from A, we only need a single instruction.
     IF (STRUPR("\1") == "A")
         IF ("\2" == "0")
             xor A
@@ -224,7 +225,26 @@ P2\@ EQUS "\2"
         ELSE
             ld \1, A
         ENDC
-    ELSE 
+
+    ; We only need a single instruction when loading 
+    ; * r8, r8/n8/[HL]
+    ; * [HL], r8/n8
+    ELIF (\
+        (STRLEN("\1") == 1) && (STRIN(R8, "\1"))\
+        && (\
+            (STRUPR("\2") == "[HL]")\
+            || ((STRLEN("\2") == 1) && (STRIN(R8, "\2") != 0))\
+            || (STRIN(N8, STRSUB("\2", 1, 1)) != 0)\
+        )\
+        || (STRUPR("\1") == "[HL]")\
+        && (\
+            ((STRLEN("\2") == 1) && (STRIN(R8, "\2") != 0))\
+            || (STRIN(N8, STRSUB("\2", 1, 1)) != 0)\
+        )\
+    )
+        ld \1, \2 
+    ELSE
+        ; otherwise, we need to load into A first.
         IF ("P1\@" >= "$ff00")
             IF ("P2\@" >= "$ff00")
                 ldh A, \2
