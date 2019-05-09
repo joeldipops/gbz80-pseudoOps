@@ -21,6 +21,7 @@ You can include everything with `INCLUDE "gbz80-pseudoOps.inc`.  It's all macros
 
 ## Acknowledgements
 Thanks to [DonaldHays](/DonaldHays) for writing the 'jump if greather than or equal to' style ops.
+ISSOtm for suggesting various improvements and submitting pull requests.
 
 ## Legend
 List of abbreviations, as used by rgbasm in https://rednex.github.io/rgbds/gbz80.7.html
