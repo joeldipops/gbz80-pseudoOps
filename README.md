@@ -17,7 +17,7 @@ There's also a list of hardware memory locations, with names like `BackgroundScr
 
 As well as some random utility macros you may find a use for.
 
-You can include everything with `INCLUDE "gbz80-pseudoOps.inc`.  You may as well - it's all macros so won't take up any cart space or cycles.
+You can include everything with `INCLUDE "gbz80-pseudoOps.inc"`.
 
 ## Acknowledgements
 Thanks to [DonaldHays](/DonaldHays) for writing the 'jump if greather than or equal to' style ops.
