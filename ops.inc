@@ -1,8 +1,8 @@
     IF !DEF(PSEUDO_OPS_INCLUDED)
 PSEUDO_OPS_INCLUDED SET 1
 
-R16 EQUS "\"BC DE HL\""
-R8 EQUS "\"A B C D E H L\""
+R16 EQUS "\"BC DE HL bc de hl\""
+R8 EQUS "\"A B C D E H L a b c d e h l\""
 
 ;;;
 ; Adds two values, Result in r8
@@ -12,15 +12,16 @@ R8 EQUS "\"A B C D E H L\""
 ;
 ;;;;
 addAny: macro
+; If the second param is an address, we need to load it first, since add can't take [n16]
 IS_P2_N16\@ SET ((STRIN("\2", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")) && (STRIN(R16, "\2") != 0 || STRLEN("\2") != 4))
     IF IS_P2_N16\@
-        ld A, \2
+        ldAny A, \2
         add A, \1
     ELSE
-        ld A, \1
+        ldAny A, \1
         add A, \2
     ENDC
-    ld \1, A 
+    ldAny \1, A 
 endm
 
 ;;;
@@ -28,9 +29,9 @@ endm
 ; adcAny r8, [r16]
 ;;;
 adcAny: macro
-    ld A, \1
+    ldAny A, \1
     adc \2
-    ld \1, A 
+    ldAny \1, A 
 endm
 
 ;;;
@@ -50,11 +51,12 @@ endm
 
 ;;;
 ; Pushes an immediate value on to the stack.
-; pushAny r16
+; pushAny [n16]
+;
 ; Affects HL
 ;;;
 pushAny: macro
-    ld HL, \1
+    ld16 HL, \1
     push HL
 endm
 
@@ -124,7 +126,7 @@ endm
 ; mult v8, v8, ?r16
 ;;;
 multAny: macro
-    ld A, \1
+    ldAny A, \1
     IF _NARG == 3
         SHIFT
         mult \1, \2
@@ -193,40 +195,59 @@ endm
 ;
 ;;;
 ldAny: macro
-    IF "\2"  == "0"
-        xor A, A
+    ; To check if an address is in HRAM, we have to strip off the square brackets
+    ; Do this for both operands.
+    IF ((STRIN("\1", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1")))
+P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)    
     ELSE
-        ld A, \2
+P1\@ EQUS "\1"
     ENDC
-    ld \1 , A
-endm
 
-;;;
-; Loads to an address in IO space
-;
-; ldhAny [$ff00 + n8], n8
-; Cycles: 5
-; Bytes: 4 
-; Flags: None 
-;
-; ldhAny [$ff00 + n8], r8
-; Cycles: 4
-; Bytes: 3 
-; Flags: None
-;
-; ldhAny [$ff00 + n8], [r16]
-; Cycles: 5
-; Bytes: 3 
-; Flags: None 
-;
-; ldhAny [$ff00 + n8], [n16]
-; Cycles: 7
-; Bytes: 5 
-; Flags: None 
-;;;
-ldhAny: macro
-    ld A, \2
-    ldh \1, A
+    IF ((STRIN("\2", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")))
+P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 2)    
+    ELSE
+P2\@ EQUS "\2"
+    ENDC
+
+    ; If loading two or from A, we only need a single instruction.
+    IF (STRUPR("\1") == "A")
+        IF ("\2" == "0")
+            xor A
+        ELIF ("P2\@" >= "$ff00")
+            ldh A, \2        
+        ELSE
+            ld A, \2
+        ENDC
+    ELIF (STRUPR("\2") == "A")
+        IF ("P1\@" >= "$ff00")
+            ldh \1, A
+        ELSE
+            ld \1, A
+        ENDC
+    ELSE 
+        IF ("P1\@" >= "$ff00")
+            IF ("P2\@" >= "$ff00")
+                ldh A, \2
+                ldh \1, A
+            ELIF ("\2" == "0")
+                ; xor A is cheaper than a load.
+                xor A
+                ldh \1, A
+            ELSE
+                ld A, \2
+                ldh \1, A
+            ENDC
+        ELIF ("P2\@" >= "$ff00")
+            ldh A, \2
+            ld \1, A
+        ELIF ("\2" == "0")
+            xor A
+            ld \1, A
+        ELSE
+            ld A, \2
+            ld \1, A
+        ENDC
+    ENDC
 endm
 
 ;;;
@@ -268,11 +289,11 @@ endm
 ;;;
 ldiAny: macro
     IF "\1" == "[HL]"
-        ld A, \2
+        ldAny A, \2
         ldi [HL], A
     ELIF "\2" == "[HL]"
         ldi A, [HL]
-        ld \1, A
+        ldAny \1, A
     ELSE
         FAIL "ldi requires [HL]"
     ENDC
@@ -327,10 +348,12 @@ endm
 ; Flags: Z=? N=0 H=0 C=0
 ;;;
 orAny: macro
-    ld A, \1
+    IF "\1" != "A"
+        ldAny A, \1
+    ENDC
     IF "\1" == "\2"
-        ; Idiot proofing phase 1
         or A, A
+        WARN "1: Avoid orAny if you intended to read from \1 more than once."
     ELSE
         or A, \2
     ENDC
@@ -385,7 +408,7 @@ endm
 ; Flags: Z=? N=0 H=1 C=0
 ;;;
 andAny: macro
-    ld A, \1
+    ldAny A, \1
     and A, \2
 endm
 
@@ -426,7 +449,7 @@ endm
 ; Cycles: 5
 ; Bytes: 4
 ; Flags: Z=? N=0 H=0 C=0
-; 
+;
 ; xorAny [n16], n8
 ; Cycles: 6
 ; Bytes: 5 
@@ -438,7 +461,7 @@ endm
 ; Flags: Z=? N=0 H=0 C=0
 ;;;
 xorAny: macro
-    ld A, \1
+    ldAny A, \1
     xor A, \2
 endm
 
@@ -456,46 +479,9 @@ endm
 ; Flags: None
 ;;;
 resAny: macro
-    ld A, \2
+    ldAny A, \2
     res \1, A
-    ld \2, A
-endm
-
-;;;
-; Resets a bit of an 8bit piece of IO space memory
-;
-; resH u3, [$ff00 + n8]
-; Cycles: 8 
-; Bytes: 6
-; Flags: None
-;;;
-resH: macro
-    ldh A, \2
-    res \1, A
-    ldh \2, A
-endm
-
-;;;
-; Compares a value with a value in the IO space of memory and sets flags.
-;
-; cpH [$ff00 + n8], n8
-; Cycles: 5
-; Bytes: 4
-; Flags: Z=? N=1, H=? C=?
-;
-; cpH [$ff00 + n8], r8 
-; Cycles: 4
-; Bytes: 3
-; Flags: Z=? N=1, H=? C=?
-;
-; cpH [$ff00 + n8], [HL] 
-; Cycles: 5
-; Bytes: 3
-; Flags: Z=? N=1, H=? C=?
-;;;
-cpH: macro
-    ldh A, \1
-    cp \2
+    ldAny \2, A
 endm
 
 ;;;
@@ -547,7 +533,7 @@ endm
 ; Flags: Z=? N=1, H=? C=?
 ;;;
 cpAny: macro
-    ld A, \1
+    ldAny A, \1
     cp \2
 endm
 
@@ -565,9 +551,9 @@ endm
 ; Flags: Z=? N=0 H=? C=C
 ;;;
 incAny: macro
-    ld A, \1
+    ldAny A, \1
     inc A
-    ld \1, A
+    ldAny \1, A
 endm
 
 ;;;
@@ -584,9 +570,9 @@ endm
 ; Flags: Z=? N=1 H=? C=C
 ;;;
 decAny: macro
-    ld A, \1
+    ldAny A, \1
     dec A
-    ld \1, A
+    ldAny \1, A
 endm
 
 ;;;
@@ -652,13 +638,13 @@ endm
 ; Flags: Z=? N=1 H=? C=?
 ;;;
 sub16: macro
-    ld A, LOW(\1)
+    ldAny A, LOW(\1)
     sub A, LOW(\2)
-    ld LOW(\1), A
+    ldAny LOW(\1), A
 
-    ld A, HIGH(\1)
+    ldAny A, HIGH(\1)
     sbc HIGH(\2)
-    ld HIGH(\1), A
+    ldAny HIGH(\1), A
 endm
 
 ;;;

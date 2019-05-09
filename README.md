@@ -38,11 +38,15 @@ Symbol|Def
 
 *Unless otherwise specified, all ops will overwrite A, and have no other side-effects*
 
+**Don't take these timings as gospel, I've overhauled the ldAny macro to make certain optimisations where possible, which has had a flow on effect to everything and I haven't counted every cycle/byte affected yet.**
+
 ### ldAny
+
+Will perform the fastest/smallest ld it can, such as using the ldh instruction where appropriate.
 
 **ldAny r8, [n16]**
 * Store the value at address *n16* into register *r8*.
-* Cycles: 5 
+* Cycles: 5
 * Bytes: 4 
 * Flags: None
 
@@ -94,31 +98,18 @@ Symbol|Def
 * Bytes: 5
 * Flags: None
 
-### ldhAny
+**ldAny [r16], 0**
+**ldAny [n16], 0**
+**ldAny [$ff00 + n8], [$ff00 + n8]**
+**ldAny [$ff00 + n8], n8**
+**ldAny [$ff00 + n8], r8**
+**ldAny [$ff00 + n8], [r16]**
+**ldAny [$ff00 + n8], [n16]**
 
-**ldhAny [$ff00 + n8], n8**
-* Store value *n8* in HRAM or IO space at $ff*n8*
-* Cycles: 5
-* Bytes: 4 
-* Flags: None 
+**ldAny r8, [$ff00 + n8]**
+**ldAny [r16], [$ff00 + n8]**
+**ldAny [n16], [$ff00 + n8]**
 
-**ldhAny [$ff00 + n8], r8**
-* Store value in register *r8* in HRAM or IO space at $ff*n8*
-* Cycles: 4
-* Bytes: 3 
-* Flags: None
-
-**ldhAny [$ff00 + n8], [r16]**
-* Store value at address pointed to by *r16* in HRAM or IO space at $ff*n8*
-* Cycles: 5
-* Bytes: 3 
-* Flags: None 
-
-**ldhAny [$ff00 + n8], [n16]**
-* Store value at address *n16* in HRAM or IO space at $ff*n8*
-* Cycles: 7
-* Bytes: 5 
-* Flags: None 
 
 ### ldiAny
 
@@ -447,46 +438,6 @@ Symbol|Def
 * Cycles: 6
 * Bytes: 4
 * Flags: None
-
-### resIO
-
-**resIO u3, [$ff00 + n8]**
-* Reset but *u3* of value at address in HRAM or IO space at $ff*n8*
-* Cycles: 8 
-* Bytes: 6
-* Flags: None
-
-### cpIO
-
-**cpIO [$ff00 + n8], n8**
-* Subtracts the value *n8* from the value in HRAM or IO space at address $ff*n8* and sets flags accordingly, without storing the result.
-* Cycles: 5
-* Bytes: 4
-* Flags: 
-    * Z: Set if result is 0, reset otherwise
-    * N: 1
-    * H: Reset if borrow from bit 4, set otherwise.
-    * C: Set if *n8* > [$ff00 + n8], reset otherwise
-
-**cpIO [$ff00 + n8], r8** 
-* Subtracts the value of *r8* from the value in HRAM or IO space at address $ff*n8* and sets flags accordingly without storing the result.
-* Cycles: 4
-* Bytes: 3
-* Flags: 
-    * Z: Set if result is 0, reset otherwise
-    * N: 1
-    * H: Reset if borrow from bit 4, set otherwise.
-    * C: Set if *r8* > [$ff00 + n8], reset otherwise
-
-**cpIO [$ff00 + n8], [HL]** 
-* Subtracts the value at address pointed to by **HL** from the value in HRAM or IO space at address $ff*n8* and sets flags accordingly without storing the result.
-* Cycles: 5
-* Bytes: 3
-* Flags: 
-    * Z: Set if result is 0, reset otherwise
-    * N: 1
-    * H: Reset if borrow from bit 4, set otherwise.
-    * C: Set if [HL] > [$ff00 + n8], reset otherwise
 
 ### cpAny
 
