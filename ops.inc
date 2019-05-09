@@ -136,10 +136,15 @@ endm
 ;;;
 ; Loads byte from anywhere to anywhere else that takes a byte.
 ;
+; ldAny [n16], 0
+; Cycles: 5
+; Bytes: 4
+; Flags: Z=1 N=0 H=0 C=0
+;
 ; ldAny [r16], 0
-; Cycles:
-; Bytes:
-; Flags: None
+; Cycles: 3
+; Bytes: 2
+; Flags: Z=1 N=0 H=0 C=0
 ;
 ; ldAny r8, [n16]
 ; Cycles: 5 
