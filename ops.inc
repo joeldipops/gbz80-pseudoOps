@@ -633,7 +633,7 @@ P2\@ EQUS "\2"
         ENDC
     ELIF IS_P2_R16\@
         ; Remove the square brackets around \1 so we can find the following address ie. [\1 + 1]
-        IF STRIN("\1", "[") == 1 && STRIN("\1", "]") == STRLEN("\1")
+        IF (STRIN("\1", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1"))
 P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)
         ELSE
 P1\@ EQUS "\1"
