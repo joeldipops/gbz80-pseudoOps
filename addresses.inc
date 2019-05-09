@@ -66,11 +66,12 @@ InterruptSwitch EQU $ffff       ; IE
 ; Memory Bank Controller Write-only addresses
 
 RomBankSelector EQU $2000
-HighRomBankSelector EQU $3000   ; For MBCs with more than 256 banks, the highest bit is set here.
+MBC5HighRomBankSelector EQU $3000   ; For MBC5s with more than 256 banks, the highest bit of the bank number is set here.
 RamSwitch EQU $0000
 
-RamSelector EQU $4000
-BankMode EQU $6000
+HighRomBankSelector EQU $4000 ; For MBC1s the high bits for ROM banks are set here.
+RamBankSelector EQU $4000 ; 
+BankMode EQU $6000 ; Switch between 0 and 1 to determine whether $4000 selects ROM  or RAM banks
 
 RealTimeClockMode EQU $4000
 LatchRealTimeClock EQU $6000    ; Stops the RTC from updating the registers, so the same value can be read until it is unlatched.
