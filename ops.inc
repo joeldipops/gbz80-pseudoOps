@@ -62,67 +62,6 @@ pushAny: macro
 endm
 
 ;;;
-; Multiples A with another value, result in HL
-; mult r8, ?r16
-;
-; mult n8, ?r16
-;
-; mult [r16], ?r16
-;
-; mult [n16], ?r16
-;;;
-mult: macro
-HAS_SIDE_AFFECTS\@ SET 0
-VALUE\@ EQUS "\1"
-    ; If a second param is supplied, use that as our temp register and don't both pushpopping
-    IF _NARG == 2
-        SHIFT
-TEMP\@ EQUS "\1"
-        IF !("{TEMP\@}" == "BC") || ("{TEMP\@}" == "DE")
-            FAIL "r16 must be either BC or DE"
-        ENDC
-    ELSE
-TEMP\@ EQUS "BC"
-HAS_SIDE_AFFECTS\@ SET 1        
-        push BC
-    ENDC
-
-    IF ("{VALUE\@}" == "[HL]") || ("{VALUE\@}" == "H") || ("{VALUE\@}" == "L")
-        FAIL "multiplying by H or L is not yet implemented."
-    ENDC
-
-    ;IF ("{VALUE\@}" == "[HL]") || ("{VALUE\@}" == "H") || ("{VALUE\@}" == "L")    
-    ;    push HL
-    ;    ld H, 0
-    ;    ld L, A
-     ;   pop TEMP\@
-    ;ELSE
-        ld HIGH(TEMP\@), 0
-        ld LOW(TEMP\@), A
-        ld H, HIGH(TEMP\@)
-        ld L, HIGH(TEMP\@)
-    ;ENDC
-
-    ; If either operand is 0, finish now.
-    or A, A
-        jr Z, .end\@
-
-    ld A, VALUE\@
-    or A, A
-        jr Z, .end\@
-
-.loop\@
-        add HL, TEMP\@
-        dec A
-        jr NZ, .loop\@
-
-.end\@
-    IF HAS_SIDE_AFFECTS\@ == 1
-        pop BC
-    ENDC
-endm
-
-;;;
 ; Multiples two values, result in HL
 ; mult v8, v8, ?r16
 ;;;
@@ -229,12 +168,19 @@ P2\@ EQUS "0"
     ; We only need a single instruction when loading 
     ; * r8, r8/n8/[HL]
     ; * [HL], r8/n8
+    ; * Passing macro to macro, we also need to check for LOW(r16) and HIGH(r16)
     ELIF (\
-        (STRLEN("\1") == 1) && (STRIN(R8, "\1"))\
+        (\
+            ((STRLEN("\1") == 1) && STRIN(R8, "\1"))\
+            || ((STRIN("\1", "LOW(") != 0) && (STRIN(R16, STRSUB("\1", 5, 2)) != 0))\
+            || ((STRIN("\1", "HIGH(") != 0) && (STRIN(R16, STRSUB("\1", 6, 2)) != 0))\
+        )\
         && (\
             (STRUPR("\2") == "[HL]")\
             || ((STRLEN("\2") == 1) && (STRIN(R8, "\2") != 0))\
             || (STRIN(N8, STRSUB("\2", 1, 1)) != 0)\
+            || ((STRIN("\2", "LOW(") != 0) && (STRIN(R16, STRSUB("\1", 5, 2)) != 0))\
+            || ((STRIN("\2", "HIGH(") != 0) && (STRIN(R16, STRSUB("\1", 6, 2)) != 0))\            
         )\
         || (STRUPR("\1") == "[HL]")\
         && (\
@@ -844,5 +790,66 @@ endm
 ;;;
 jpne: macro
     jp NZ, \1
+endm
+
+;;;
+; mult r8, ?r16
+;
+; mult n8, ?r16
+;
+; mult [n16], ?r16
+;
+; mult [r16], ?r16
+;
+; Multiplies A with r8, result in HL
+; r16 is optional register to trash (BC or DE)
+;;;
+mult: macro
+HAS_SIDE_AFFECTS\@ SET 0
+VALUE\@ EQUS "\1"
+
+    IF ("{VALUE\@}" == "[HL]") || ("{VALUE\@}" == "H") || ("{VALUE\@}" == "L")
+        FAIL "multiplying by H or L is not yet implemented."
+    ENDC    
+
+    ; If a second param is supplied, use that as our temp register and don't both pushpopping
+    IF _NARG == 2
+        SHIFT
+TEMP\@ EQUS "\1"
+        IF !("{TEMP\@}" == "BC") || ("{TEMP\@}" == "DE")
+            FAIL "r16 must be either BC or DE"
+        ENDC
+    ELSE
+TEMP\@ EQUS "BC"
+HAS_SIDE_AFFECTS\@ SET 1        
+        push BC
+    ENDC
+
+    ld H, A
+
+    ; Skip this step if we're already using that register.
+    IF (STRSUB("{TEMP\@}", 2, 1) != "{VALUE\@}")
+        ldAny LOW({TEMP\@}), {VALUE\@}
+    ENDC
+    ld L, 0
+    ld HIGH(TEMP\@), L        
+
+    ld A, 7    
+
+    ; Optimized first iteration
+    sla H
+    jr NC, .loop\@
+    ldAny L, LOW({TEMP\@})
+.loop\@
+        add HL, HL
+        jr NC, .noAdd\@
+        add HL, TEMP\@
+.noAdd\@
+        dec A
+    jr NZ, .loop\@
+
+    IF HAS_SIDE_AFFECTS\@ == 1
+        pop BC
+    ENDC 
 endm
     ENDC
