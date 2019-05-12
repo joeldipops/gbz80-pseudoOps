@@ -44,6 +44,9 @@ Symbol|Def
 ### ldAny
 
 Will perform the fastest/smallest ld it can, such as using the ldh instruction where appropriate.
+Be careful when calling from macros - The parser won't select the optimal path with something like `ldAny LOW(PARAM_1\@), PARAM_2\@`
+If you still want to use ldAny, you can use `{}` around assembler variables eg `ldAny LOW({PARAM_2\@}), {PARAM_2\@}`
+
 
 **ldAny r8, [n16]**
 * Store the value at address *n16* into register *r8*.
@@ -623,20 +626,12 @@ Will perform the fastest/smallest ld it can, such as using the ldh instruction w
 * Multiplies **A** with register *r8*.  Result in **HL**.
 * Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
 * Cycles: Depends on value of operands.
-* Bytes: 16/18
-* Flags:
-    * Z: 1
-    * N: Set if result is non-zero, reset otherwise
-    * H: 0
-    * C: 0
+* Bytes: TBC
+* Flags: TBC
 
 **mult n8, ?r16**
 * Multiplies **A** with *n8*.  Result in **HL**.
 * Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
 * Cycles: Depends on value of operands.
-* Bytes: 26
-* Flags: 17/19
-    * Z: 1
-    * N: Set if result is non-zero, reset otherwise
-    * H: 0
-    * C: 0
+* Bytes: TBC
+* Flags: TBC
