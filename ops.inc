@@ -62,7 +62,7 @@ pushAny: macro
 endm
 
 ;;;
-; Multiples two values, result in HL
+; Multiplies two values, result in HL
 ; mult v8, v8, ?r16
 ;;;
 multAny: macro
@@ -168,25 +168,10 @@ P2\@ EQUS "0"
     ; We only need a single instruction when loading 
     ; * r8, r8/n8/[HL]
     ; * [HL], r8/n8
-    ; * Passing macro to macro, we also need to check for LOW(r16) and HIGH(r16)
+    ; * (so anything without [] unless it's [HL])
     ELIF (\
-        (\
-            ((STRLEN("\1") == 1) && STRIN(R8, "\1"))\
-            || ((STRIN("\1", "LOW(") != 0) && (STRIN(R16, STRSUB("\1", 5, 2)) != 0))\
-            || ((STRIN("\1", "HIGH(") != 0) && (STRIN(R16, STRSUB("\1", 6, 2)) != 0))\
-        )\
-        && (\
-            (STRUPR("\2") == "[HL]")\
-            || ((STRLEN("\2") == 1) && (STRIN(R8, "\2") != 0))\
-            || (STRIN(N8, STRSUB("\2", 1, 1)) != 0)\
-            || ((STRIN("\2", "LOW(") != 0) && (STRIN(R16, STRSUB("\1", 5, 2)) != 0))\
-            || ((STRIN("\2", "HIGH(") != 0) && (STRIN(R16, STRSUB("\1", 6, 2)) != 0))\            
-        )\
-        || (STRUPR("\1") == "[HL]")\
-        && (\
-            ((STRLEN("\2") == 1) && (STRIN(R8, "\2") != 0))\
-            || (STRIN(N8, STRSUB("\2", 1, 1)) != 0)\
-        )\
+        ((("{P1\@}" == "0") || (STRUPR("{P1\@}") == "HL")) && ("{P2\@}" == "0"))\
+        || (("{P1\@}" == "0") && ((STRUPR("{P2\@}") == "HL") || ("{P2\@}" == "0")))\                
     )
         ld \1, \2 
     ELSE
@@ -590,6 +575,7 @@ P1\@ EQUS "\1"
         ldAny [P1\@ + 1], LOW(\2)
     ELSE
         ; If both are addresses
+        WARN "ld16 [n16], [n16] is not currently implemented"
         ldAny [P1\@], [P2\@]
         ldAny [P1\@ + 1], [P2\@ + 1]
     ENDC
@@ -853,3 +839,5 @@ HAS_SIDE_AFFECTS\@ SET 1
     ENDC 
 endm
     ENDC
+
+
