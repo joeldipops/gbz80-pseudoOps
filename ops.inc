@@ -552,6 +552,13 @@ P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 2)
 P2\@ EQUS "\2"
     ENDC    
 
+    ; Remove the square brackets around \1 so we can find the following address ie. [\1 + 1]
+    IF (STRIN("\1", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1"))
+P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)
+    ELSE
+P1\@ EQUS "\1"
+    ENDC    
+
     IF IS_P1_R16\@
         IF IS_P2_R16\@
             ; If both operands are registers
@@ -563,19 +570,11 @@ P2\@ EQUS "\2"
             ldAny LOW(\1), [P2\@ + 1]
         ENDC
     ELIF IS_P2_R16\@
-        ; Remove the square brackets around \1 so we can find the following address ie. [\1 + 1]
-        IF (STRIN("\1", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1"))
-P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)
-        ELSE
-P1\@ EQUS "\1"
-        ENDC
-
         ; If only second operand is a register
         ldAny [P1\@], HIGH(\2)
         ldAny [P1\@ + 1], LOW(\2)
     ELSE
         ; If both are addresses
-        WARN "ld16 [n16], [n16] is not currently implemented"
         ldAny [P1\@], [P2\@]
         ldAny [P1\@ + 1], [P2\@ + 1]
     ENDC
@@ -838,6 +837,3 @@ HAS_SIDE_AFFECTS\@ SET 1
         pop BC
     ENDC 
 endm
-    ENDC
-
-
