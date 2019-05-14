@@ -26,14 +26,9 @@ endm
 ; Sets the sprite to a new Y location.
 ; @param \1 Sprite number
 ; @param \2 Y co-ordinate.
-; @param \3 1 if \2 is the accumulator, 0 if it's not.
 ;;;
 setSpriteY: macro
-    IF \3 == 1
-        ld [OAMStage + (\1 * SPRITE_SIZE)], \2
-    ELSE
-        ldAny [OAMStage + (\1 * SPRITE_SIZE)], \2
-    ENDC
+    ldAny [OAMStage + (\1 * SPRITE_SIZE)], \2
 endm
 
 ;;;
@@ -49,8 +44,8 @@ updateSprite: macro
     IF (\6 == 1)
         ldAny [OAMStage + (\1 * SPRITE_SIZE)], \3
         ldAny [OAMStage + (\1 * SPRITE_SIZE) + 1], \2
-        ldAny [OAMStage + (\1 * SPRITE_SIZE) + 1], \4        
-        ldAny [OAMStage + (\1 * SPRITE_SIZE) + 1], \5        
+        ldAny [OAMStage + (\1 * SPRITE_SIZE) + 2], \4        
+        ldAny [OAMStage + (\1 * SPRITE_SIZE) + 3], \5        
     ELSE
         ld HL, OAMStage + (\1 * SPRITE_SIZE)
         ldiAny [HL], \3
@@ -58,6 +53,15 @@ updateSprite: macro
         ldiAny [HL], \4
         ldiAny [HL], \5
     ENDC
+endm
+
+;;;
+; ors a register/value with itself to see if it's zero
+; @param \1 The value.
+;;; 
+if0: macro
+    ld A, \1
+    or A, A
 endm
 
 ;;;
