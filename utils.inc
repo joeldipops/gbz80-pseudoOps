@@ -5,6 +5,21 @@ INCLUDE "ops.inc"
 INCLUDE "constants.inc"
 
 ;;;
+; Creates a routine to multiply A with a given register so that the mult macro won't appear in too many places eating up precious bytes.
+; @param \1 r8 specify the register that mult routine will multiply with A.
+;;;
+placeMultiplyRoutine: macro
+    IF !DEF(MULT_PLACED)
+MULT_PLACED SET 1
+multiply:
+        mult \1  
+        ret      
+    ELSE
+        FAIL "Multiply already placed"
+    ENDC
+endm
+
+;;;
 ; For sprite updates to work, we need to know where in memory they sit.
 ; Call this before using any sprite macros.
 ; @param \1 Memory address of sprite attributes before they are copied to V-RAM
