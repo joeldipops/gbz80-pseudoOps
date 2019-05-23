@@ -793,8 +793,8 @@ mult: macro
 HAS_SIDE_AFFECTS\@ SET 0
 VALUE\@ EQUS "\1"
 
-    IF ("{VALUE\@}" == "[HL]") || ("{VALUE\@}" == "H") || ("{VALUE\@}" == "L")
-        FAIL "multiplying by H or L is not yet implemented."
+    IF ("{VALUE\@}" == "[HL]") || ("{VALUE\@}" == "H")
+        FAIL "multiplying by H or [HL] is not yet implemented."
     ENDC    
 
     ; If a second param is supplied, use that as our temp register and don't both pushpopping

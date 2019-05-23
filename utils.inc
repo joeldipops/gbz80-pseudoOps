@@ -5,14 +5,14 @@ INCLUDE "ops.inc"
 INCLUDE "constants.inc"
 
 ;;;
-; Creates a routine to multiply A with a given register so that the mult macro won't appear in too many places eating up precious bytes.
-; @param \1 r8 specify the register that mult routine will multiply with A.
+; Creates a routine to multiply A with L so that the mult macro won't appear in too many places eating up precious bytes.
+; @param r16 Specifies a 16bit register to be trashed by the operation.
 ;;;
 placeMultiplyRoutine: macro
     IF !DEF(MULT_PLACED)
 MULT_PLACED SET 1
 multiply:
-        mult \1  
+        mult L, \1
         ret      
     ELSE
         FAIL "Multiply already placed"
@@ -94,6 +94,36 @@ pad: macro
             rst $00
         ENDR
     ENDC
-endm    
+endm   
+
+;;; 
+; jpAny cc, [n16]
+;
+; I doubt there are any reason anyone would use this, but at least I learnt about daa
+;;;
+jrAny: macro
+    IF ("\1" == "NC") || ("\1" == "NZ") || ("\1" == "C") || ("\1" == "Z")
+        jr \1, \2
+    ELSE
+        IF ("\1" == "N") || ("\1" == "NN")
+            ld A, $0c
+            daa
+            bit 2, A
+        ELIF ("\1" == "H") || ("\1" == "NH")
+            ; can't xor A because that will mess up the flags.
+            ld A, 0
+            daa
+            bit 1, A            
+        ELSE
+            FAIL "unknown value for cc"            
+        ENDC
+
+        IF STRLEN("\1") == 2
+            jr Z, \2
+        ELSE
+            jr NZ, \2
+        ENDC
+    ENDC
+endm
 
     ENDC
