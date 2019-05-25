@@ -178,8 +178,8 @@ P2\@ EQUS "0"
         ; otherwise, we need to load into A first.
         IF ("P1\@" >= "$ff00")
             IF ("P2\@" >= "$ff00")
-                ldh A, \2
-                ldh \1, A
+                ldh A, \2 
+                ldh \1, A 
             ELIF ("\2" == "0")
                 ; xor A is cheaper than a load.
                 xor A
@@ -239,7 +239,9 @@ endm
 ; Flags: None
 ;;;
 ldiAny: macro
-    IF "\1" == "[HL]"
+    IF "\1\2" == "[HL][HL]"
+        FAIL "ambiguous operation"
+    ELIF "\1" == "[HL]"
         ldAny A, \2
         ldi [HL], A
     ELIF "\2" == "[HL]"
@@ -247,6 +249,20 @@ ldiAny: macro
         ldAny \1, A
     ELSE
         FAIL "ldi requires [HL]"
+    ENDC
+endm
+
+lddAny: macro
+    IF "\1\2" == "[HL][HL]"
+        FAIL "ambiguous operation"
+    ELIF "\1" == "[HL]"
+        ldAny A, \2
+        ldd [HL], A
+    ELIF "\2" == "[HL]"
+        ldd A, [HL]
+        ldAny \1, A
+    ELSE
+        FAIL "ldd requires [HL]"
     ENDC
 endm
 
@@ -792,11 +808,6 @@ endm
 mult: macro
 HAS_SIDE_AFFECTS\@ SET 0
 VALUE\@ EQUS "\1"
-
-    IF ("{VALUE\@}" == "[HL]") || ("{VALUE\@}" == "H")
-        FAIL "multiplying by H or [HL] is not yet implemented."
-    ENDC    
-
     ; If a second param is supplied, use that as our temp register and don't both pushpopping
     IF _NARG == 2
         SHIFT
@@ -810,21 +821,21 @@ HAS_SIDE_AFFECTS\@ SET 1
         push BC
     ENDC
 
-    ld H, A
-
     ; Skip this step if we're already using that register.
     IF (STRSUB("{TEMP\@}", 2, 1) != "{VALUE\@}")
         ldAny LOW({TEMP\@}), {VALUE\@}
-    ENDC
-    ld L, 0
-    ld HIGH(TEMP\@), L        
+    ENDC    
 
-    ld A, 7    
+    ld H, A
+    ld L, 0
+    ld HIGH(TEMP\@), L
+
+    ld A, 7
 
     ; Optimized first iteration
     sla H
     jr NC, .loop\@
-    ldAny L, LOW({TEMP\@})
+    ld L, LOW({TEMP\@})
 .loop\@
         add HL, HL
         jr NC, .noAdd\@

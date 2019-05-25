@@ -10,6 +10,18 @@ SECTION "Header", ROM0[$0100]
 SECTION "Home", ROM0[$0150]
 main:
     nop
+
+multTest:
+    ld A, 7
+    ld HL, $c000
+    ldAny [HL], 7
+    mult [HL]
+    jr main
+
+ldilddTest:
+    ldiAny [HL], A
+    lddAny [HL], A
+
 ;;; 
 ; H=1 N=0 and H=0 N=1 cases 
 ;;;

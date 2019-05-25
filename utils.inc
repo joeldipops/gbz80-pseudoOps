@@ -5,14 +5,15 @@ INCLUDE "ops.inc"
 INCLUDE "constants.inc"
 
 ;;;
-; Creates a routine to multiply A with L so that the mult macro won't appear in too many places eating up precious bytes.
-; @param r16 Specifies a 16bit register to be trashed by the operation.
+; Creates a routine to multiply A with a register so that the mult macro won't appear in too many places eating up precious bytes.
+; @param r16 Specifies either BC or DE to be trashed by the operation.
+; * the lower register will hold the value to be multiplied with A
 ;;;
 placeMultiplyRoutine: macro
     IF !DEF(MULT_PLACED)
 MULT_PLACED SET 1
 multiply:
-        mult L, \1
+        mult LOW(\1), \1
         ret      
     ELSE
         FAIL "Multiply already placed"

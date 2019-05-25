@@ -47,47 +47,77 @@ Will perform the fastest/smallest ld it can, such as using the ldh instruction w
 Be careful when calling from macros - The parser won't select the optimal path with something like `ldAny LOW(PARAM_1\@), PARAM_2\@`
 If you still want to use ldAny, you can use `{}` around assembler variables eg `ldAny LOW({PARAM_2\@}), {PARAM_2\@}`
 
+**ldAny A, 0**
+* Assembles to xor A, A
+
+**ldAny [r16], 0**
+**ldAny [$ff00 + n8], 0**
+* Cycles: 4
+* Bytes: 3
+* Flags
+    * Z: 0
+    * N: 0
+    * H: 0 
+    * C: 0
+
+**ldAny [n16], 0**
+* Cycles: 5
+* Bytes: 4    
+* Flags: As above
+
+**ldAny [$ff00 + n8], r8**
+**ldAny r8, [$ff00 + n8]**
+* Cycles: 4
+* Bytes: 3
+* Flags: None
+
+**ldAny [$ff00 + n8], [r16]**
+**ldAny [r16], [$ff00 + n8]**
+* Cycles: 5
+* Bytes: 3
+* Flags: None
+
+**ldAny [$ff00 + n8], [$ff00 + n8]**
+* Cycles: 6
+* Bytes: 4
+* Flags: None
+
+**ldAny [$ff00 + n8], [n16]**
+**ldAny [n16], [$ff00 + n8]**
+* Cycles: 7 
+* Bytes: 5
+* Flags: None
+
+**ldAny [$ff00 + n8], n8**
+* Cycles: 5
+* Bytes: 4
+* Flags: None
 
 **ldAny r8, [n16]**
+**ldAny [n16], r8**
 * Store the value at address *n16* into register *r8*.
 * Cycles: 5
 * Bytes: 4 
 * Flags: None
 
 **ldAny r8, [r16]**
+**ldAny [r16], r8**
 * Store the value pointed to by register *r16* into register *r8*
 * Cycles: 3
 * Bytes: 2 
 * Flags: None
 
-**ldAny [n16], r8**
-* Store the value in register *r8* to address *n16*
-* Cycles: 5
+**ldAny [r16], [n16]**
+**ldAny [n16], [r16]**
+* Store the value at address *n16* into address pointed to by register *r16*
+* Cycles: 6
 * Bytes: 4
-* Flags: None
-
-**ldAny [r16], r8**
-* Store the value in register *r8* to address pointed to by register *r16*
-* Cycles: 3
-* Bytes: 2
 * Flags: None
 
 **ldAny [r16], [r16]**
 * Store the value pointed to by register *r16* in to address pointed to by other register *r16*
 * Cycles: 4
 * Bytes: 2
-* Flags: None
-
-**ldAny [r16], [n16]**
-* Store the value at address *n16* into address pointed to by register *r16*
-* Cycles: 6
-* Bytes: 4
-* Flags: None
-
-**ldAny [n16], [r16]**
-* Store the value at address pointed to by *r16* to address *n16*
-* Cycles: 6
-* Bytes: 4
 * Flags: None
 
 **ldAny [n16], [n16]**
@@ -102,53 +132,46 @@ If you still want to use ldAny, you can use `{}` around assembler variables eg `
 * Bytes: 5
 * Flags: None
 
-**ldAny [r16], 0**
-**ldAny [n16], 0**
-**ldAny [$ff00 + n8], [$ff00 + n8]**
-**ldAny [$ff00 + n8], n8**
-**ldAny [$ff00 + n8], r8**
-**ldAny [$ff00 + n8], [r16]**
-**ldAny [$ff00 + n8], [n16]**
-
-**ldAny r8, [$ff00 + n8]**
-**ldAny [r16], [$ff00 + n8]**
-**ldAny [n16], [$ff00 + n8]**
-
-
-### ldiAny
+### ldiAny/lddAny
 
 **ldiAny r8, [HL]**
-* Store value at address pointed to by **HL** into register *r8* then increments **HL**
+**lddAny r8, [HL]**
+* Store value at address pointed to by **HL** into register *r8* then increments/decrements **HL**
 * Cycles: 3
 * Bytes: 2
 * Flags: None
 
 **ldiAny [r16], [HL]**
-* Store value at address pointed to by **HL** into address pointed to by *r16* then increments **HL**
+**lddAny [r16], [HL]**
+* Store value at address pointed to by **HL** into address pointed to by *r16* then increments/decrements **HL**
 * Cycles: 4
 * Bytes: 2
 * Flags: None
 
 **ldiAny [n16], [HL]**
-* Store value at address pointed to by **HL** into address *n16* then increments **HL**
+**lddAny [n16], [HL]**
+* Store value at address pointed to by **HL** into address *n16* then increments/decrements **HL**
 * Cycles: 6
 * Bytes: 4
 * Flags: None
 
 **ldiAny [HL], r8**
-* Storevalue of *r8* into address pointed to by **HL** then increments **HL**
+**lddAny [HL], r8**
+* Storevalue of *r8* into address pointed to by **HL** then increments/decrements **HL**
 * Cycles: 3
 * Bytes: 2
 * Flags: None
 
 **ldiAny [HL], [r16]**
-* Store value at address pointed to by *n16* in to address pointed to by **HL** then increments **HL**
+**lddAny [HL], [r16]**
+* Store value at address pointed to by *n16* in to address pointed to by **HL** then increments/decrements **HL**
 * Cycles: 4
 * Bytes: 2
 * Flags: None
 
 **ldiAny [HL], [n16]**
-* Store value at address *n16* in to address pointed to by **HL** then increments **HL**
+**lddAny [HL], [n16]**
+* Store value at address *n16* in to address pointed to by **HL** then increments/decrements **HL**
 * Cycles: 6
 * Bytes: 4
 * Flags: None
@@ -626,12 +649,30 @@ If you still want to use ldAny, you can use `{}` around assembler variables eg `
 * Multiplies **A** with register *r8*.  Result in **HL**.
 * Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
 * Cycles: Depends on value of operands.
-* Bytes: TBC
-* Flags: TBC
+* Bytes: 18 if r16 supplied
+* Flags:
+    * Z: 1
+    * N: 1
+    * H: 0
+    * C: 0
 
 **mult n8, ?r16**
 * Multiplies **A** with *n8*.  Result in **HL**.
 * Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
 * Cycles: Depends on value of operands.
-* Bytes: TBC
-* Flags: TBC
+* Bytes: 20 if r16 supplied
+* Flags: As above
+
+**mult [n16], ?r16**
+* Multiplies **A** with value at *[n16]*.  Result in **HL**.
+* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
+* Cycles: Depends on value of operands.
+* Bytes: 22 if r16 supplied
+* Flags: As above
+
+**mult [r16], ?r16**
+* Multiplies **A** with value at address in *[r16]*.  Result in **HL**.
+* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
+* Cycles: Depends on value of operands.
+* Bytes: 21 if r16 supplied
+* Flags: As above
