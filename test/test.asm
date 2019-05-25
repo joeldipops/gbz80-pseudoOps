@@ -11,6 +11,16 @@ SECTION "Home", ROM0[$0150]
 main:
     nop
 
+jrAliasTest:
+    jrlte @+12
+    jrlte @+12
+    jrgt @+12
+    jrgte @+12
+
+
+_iamalabel:
+    nop
+
 multTest:
     ld A, 7
     ld HL, $c000
