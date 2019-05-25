@@ -4,6 +4,7 @@ PSEUDO_OPS_INCLUDED SET 1
 N8 EQUS "\"$ % 0 1 2 3 4 5 6 7 8 9\""
 R16 EQUS "\"BC DE HL bc de hl\""
 R8 EQUS "\"A B C D E H L a b c d e h l\""
+LBL_CHARS EQUS "\"_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\""
 
 ;;;
 ; Adds two values, Result in r8
@@ -725,6 +726,63 @@ add16: macro
 endm
 
 ;;;
+; mult r8, ?r16
+;
+; mult n8, ?r16
+;
+; mult [n16], ?r16
+;
+; mult [r16], ?r16
+;
+; Multiplies A with r8, result in HL
+; r16 is optional register to trash (BC or DE)
+;;;
+mult: macro
+HAS_SIDE_AFFECTS\@ SET 0
+VALUE\@ EQUS "\1"
+    ; If a second param is supplied, use that as our temp register and don't both pushpopping
+    IF _NARG == 2
+        SHIFT
+TEMP\@ EQUS "\1"
+        IF !("{TEMP\@}" == "BC") || ("{TEMP\@}" == "DE")
+            FAIL "r16 must be either BC or DE"
+        ENDC
+    ELSE
+TEMP\@ EQUS "BC"
+HAS_SIDE_AFFECTS\@ SET 1        
+        push BC
+    ENDC
+
+    ; Skip this step if we're already using that register.
+    IF (STRSUB("{TEMP\@}", 2, 1) != "{VALUE\@}")
+        ldAny LOW({TEMP\@}), {VALUE\@}
+    ENDC    
+
+    ld H, A
+    ld L, 0
+    ld HIGH(TEMP\@), L
+
+    ld A, 7
+
+    ; Optimized first iteration
+    sla H
+    jr NC, .loop\@
+    ld L, LOW({TEMP\@})
+.loop\@
+        add HL, HL
+        jr NC, .noAdd\@
+        add HL, TEMP\@
+.noAdd\@
+        dec A
+    jr NZ, .loop\@
+
+    IF HAS_SIDE_AFFECTS\@ == 1
+        pop BC
+    ENDC 
+endm
+
+
+;;;
 ; Jumps to address n16 if in previous cp, sub or sbc, A < x
 ; jplt n16
 ; Cycles: 4 if jump occurs, 3 otherwise
@@ -794,58 +852,81 @@ jpne: macro
 endm
 
 ;;;
-; mult r8, ?r16
-;
-; mult n8, ?r16
-;
-; mult [n16], ?r16
-;
-; mult [r16], ?r16
-;
-; Multiplies A with r8, result in HL
-; r16 is optional register to trash (BC or DE)
+; Jumps to address n16 if in previous cp, sub or sbc, A < x
+; jrlt n16
+; Cycles: 3 if jump occurs, 2 otherwise
+; Bytes: 2
+; Flags:
 ;;;
-mult: macro
-HAS_SIDE_AFFECTS\@ SET 0
-VALUE\@ EQUS "\1"
-    ; If a second param is supplied, use that as our temp register and don't both pushpopping
-    IF _NARG == 2
-        SHIFT
-TEMP\@ EQUS "\1"
-        IF !("{TEMP\@}" == "BC") || ("{TEMP\@}" == "DE")
-            FAIL "r16 must be either BC or DE"
-        ENDC
+jrlt: macro
+  jr C, \1
+endm
+
+;;;
+; jplte n16
+; Jumps to address n16 if in previous cp, sub or sbc, A <= x
+; Cycles: 3 - 6 depending on result
+; Bytes: 4
+; Flags: None
+;;;
+jrlte: macro
+    jr C, \1
+    ; If \2 starts like a label, not a number
+    IF (STRIN(LBL_CHARS, STRSUB("\1", 1, 1)) != 0)
+        jr Z, \1
     ELSE
-TEMP\@ EQUS "BC"
-HAS_SIDE_AFFECTS\@ SET 1        
-        push BC
+        jr Z, \1 - 2 ; -2 since jr is two bytes.
     ENDC
+endm
 
-    ; Skip this step if we're already using that register.
-    IF (STRSUB("{TEMP\@}", 2, 1) != "{VALUE\@}")
-        ldAny LOW({TEMP\@}), {VALUE\@}
-    ENDC    
+;;;
+; jrgt n16
+; Jumps to address n16 if in previous cp, sub or sbc, A > x
+; Cycles: 3 - 6 depending on result
+; Bytes: 4
+; Flags: None
+;;;
+jrgt: macro
+    jr C, .endCompare\@
+    ; If \2 starts like a label, not a number
+    IF (STRIN(LBL_CHARS, STRSUB("\1", 1, 1)) != 0)
+        jr NZ, \1
+    ELSE
+        jr NZ, \1 - 2 ; -2 since jr is two bytes.
+    ENDC
+.endCompare\@
+endm
 
-    ld H, A
-    ld L, 0
-    ld HIGH(TEMP\@), L
+;;;
+; jrgte n16
+; Jumps to address n16 if in previous cp, sub or sbc, A >= x
+; Cycles:  3 if jump occurs, 2 otherwise
+; Bytes: 4
+; Flags: None
+;;;
+jrgte: macro
+  jr nc, \1
+endm
 
-    ld A, 7
+;;;
+; jreq n16
+; Jumps to address n16 if in previous cp, sub or sbc, A == x
+; Cycles: 3 if jump occurs, 2 otherwise
+; Bytes: 4
+; Flags: None
+;;;
+jreq: macro
+  jr NZ, \1
+endm
 
-    ; Optimized first iteration
-    sla H
-    jr NC, .loop\@
-    ld L, LOW({TEMP\@})
-.loop\@
-        add HL, HL
-        jr NC, .noAdd\@
-        add HL, TEMP\@
-.noAdd\@
-        dec A
-    jr NZ, .loop\@
-
-    IF HAS_SIDE_AFFECTS\@ == 1
-        pop BC
-    ENDC 
+;;;
+; jrne n16
+; Jumps to address n16 if in previous cp, sub or sbc, A != x
+; Cycles: 3 if jump occurs, 2 otherwise
+; Bytes: 4
+; Flags: None
+;;;
+jrne: macro
+  jr NZ, \1
 endm
     ENDC
