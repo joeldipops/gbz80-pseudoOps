@@ -39,7 +39,42 @@ Symbol|Def
 
 *Unless otherwise specified, all ops will overwrite A, and have no other side-effects*
 
-**Don't take these timings as gospel, I've overhauled the ldAny macro to make certain optimisations where possible, which has had a flow on effect to everything and I haven't counted every cycle/byte affected yet.**
+**Don't take these sizes/timings as gospel - I've added them up by hand, but haven't done any tests to make sure they are exact.**
+
+
+### mult 
+
+**mult r8, ?r16**
+* Multiplies **A** with register *r8*.  Result in **HL**.
+* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
+* Cycles: Depends on value of operands.
+* Bytes: 18 if r16 supplied
+* Flags:
+    * Z: 1
+    * N: 1
+    * H: 0
+    * C: 0
+
+**mult n8, ?r16**
+* Multiplies **A** with *n8*.  Result in **HL**.
+* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
+* Cycles: Depends on value of operands.
+* Bytes: 20 if r16 supplied
+* Flags: As above
+
+**mult [n16], ?r16**
+* Multiplies **A** with value at *[n16]*.  Result in **HL**.
+* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
+* Cycles: Depends on value of operands.
+* Bytes: 22 if r16 supplied
+* Flags: As above
+
+**mult [r16], ?r16**
+* Multiplies **A** with value at address in *[r16]*.  Result in **HL**.
+* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
+* Cycles: Depends on value of operands.
+* Bytes: 21 if r16 supplied
+* Flags: As above
 
 ### ldAny
 
@@ -48,7 +83,7 @@ Be careful when calling from macros - The parser won't select the optimal path w
 If you still want to use ldAny, you can use `{}` around assembler variables eg `ldAny LOW({PARAM_2\@}), {PARAM_2\@}`
 
 **ldAny A, 0**
-* Assembles to xor A, A
+* Assembles to `xor A, A`
 
 **ldAny [r16], 0**
 **ldAny [$ff00 + n8], 0**
@@ -131,6 +166,49 @@ If you still want to use ldAny, you can use `{}` around assembler variables eg `
 * Cycles: 6
 * Bytes: 5
 * Flags: None
+
+### ld16
+
+**ld16 r16, r16**
+* Stores the value of one 16 bit register in to another.
+* eg. ld16 HL, BC
+* Cycles: 2
+* Bytes: 2
+* Flags: None
+
+**ld16 r16, [n16]**
+* Stores the 16bit value at address *n16* and following byte in to register r16
+* eg. ld16 HL, $c123
+* Cycles: 10
+* Bytes: 8
+* Flags: None
+
+**ld16 [n16], r16**
+* Stores the value in *r16* to address *n16* and following address
+* eg. ld16 $c123, HL
+* Cycles: 10
+* Bytes: 8
+* Flags: None
+
+**ld16 [n16], [n16]**
+* Stores the 16bit value at one address *n16* (and next address) in to another address *n16* and next address.
+* eg. ld16 $d321, $c123
+* Cycles: 10
+* Bytes: 8
+* Flags: None
+
+### sub16
+
+**sub16 r16, r16**
+* Subtracts the value of 1 16bit register from another and stores the result into the first register.
+* eg. sub16 HL, BC
+* Cycles: 6
+* Bytes: 6
+* Flags: 
+    * Z: Set if value in high byte is 0, reset otherwise
+    * N: 1
+    * H: Reset if borrow from bit 11, set otherwise.
+    * C: Set if first *r16* < second *r16*, reset otherwise.
 
 ### ldiAny/lddAny
 
@@ -599,80 +677,3 @@ If you still want to use ldAny, you can use `{}` around assembler variables eg `
     * N: 1
     * H: Reset if borrow from bit 4, set otherwise
     * C: Not affected
-
-### ld16
-
-**ld16 r16, r16**
-* Stores the value of one 16 bit register in to another.
-* eg. ld16 HL, BC
-* Cycles: 2
-* Bytes: 2
-* Flags: None
-
-**ld16 r16, [n16]**
-* Stores the 16bit value at address *n16* and following byte in to register r16
-* eg. ld16 HL, $c123
-* Cycles: 10
-* Bytes: 8
-* Flags: None
-
-**ld16 [n16], r16**
-* Stores the value in *r16* to address *n16* and following address
-* eg. ld16 $c123, HL
-* Cycles: 10
-* Bytes: 8
-* Flags: None
-
-**ld16 [n16], [n16]**
-* Stores the 16bit value at one address *n16* (and next address) in to another address *n16* and next address.
-* eg. ld16 $d321, $c123
-* Cycles: 10
-* Bytes: 8
-* Flags: None
-
-### sub16
-
-**sub16 r16, r16**
-* Subtracts the value of 1 16bit register from another and stores the result into the first register.
-* eg. sub16 HL, BC
-* Cycles: 6
-* Bytes: 6
-* Flags: 
-    * Z: Set if value in high byte is 0, reset otherwise
-    * N: 1
-    * H: Reset if borrow from bit 11, set otherwise.
-    * C: Set if first *r16* < second *r16*, reset otherwise.
-
-### mult 
-
-**mult r8, ?r16**
-* Multiplies **A** with register *r8*.  Result in **HL**.
-* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
-* Cycles: Depends on value of operands.
-* Bytes: 18 if r16 supplied
-* Flags:
-    * Z: 1
-    * N: 1
-    * H: 0
-    * C: 0
-
-**mult n8, ?r16**
-* Multiplies **A** with *n8*.  Result in **HL**.
-* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
-* Cycles: Depends on value of operands.
-* Bytes: 20 if r16 supplied
-* Flags: As above
-
-**mult [n16], ?r16**
-* Multiplies **A** with value at *[n16]*.  Result in **HL**.
-* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
-* Cycles: Depends on value of operands.
-* Bytes: 22 if r16 supplied
-* Flags: As above
-
-**mult [r16], ?r16**
-* Multiplies **A** with value at address in *[r16]*.  Result in **HL**.
-* Optionally, specify BC or DE to be affected and save 8 cycles, 2 bytes
-* Cycles: Depends on value of operands.
-* Bytes: 21 if r16 supplied
-* Flags: As above
