@@ -11,6 +11,8 @@ SECTION "Home", ROM0[$0150]
 main:
     nop
 
+    ld HL, [SP]
+
 jrAliasTest:
     jrlte @+12
     jrlte @+12
