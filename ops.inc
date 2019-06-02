@@ -135,6 +135,38 @@ endm
 ; Flags: None
 ;
 ;;;
+
+;;;
+;
+;
+;
+;;;
+_tryLdhOut: macro
+    IF (DEF("\2") && \2 >= $ff00)
+        FAIL "Boom"
+        ldh \1, A
+    ELSE
+        ld \1, A
+    ENDC
+endm
+
+
+;;;
+;
+; @param \1 The [n16] value to load into A
+; @param \2 n16 having had brackets stripped off
+;;;
+_tryLdhIn: macro
+    IF ("\2" == "0")
+        xor A
+    ELIF (\2 >= $ff00)
+        ldh A, \1
+    ELSE
+        ld A, \1
+    ENDC
+endm
+
+
 ldAny: macro
     ; To check if an address is in HRAM, we have to strip off the square brackets
     ; Do this for both operands.
@@ -151,22 +183,20 @@ P2\@ EQUS "0"
     ENDC
 
     ; If loading to or from A, we only need a single instruction.
-    IF (STRUPR("\1") == "A")
-        IF ("\2" == "0")
-            xor A
-        ELIF ("P2\@" >= "$ff00")
-            ldh A, \2        
-        ELSE
+    IF STRUPR("\1") == "A"
+        IF (("\2" == "[DE]") || ("\2" == "[BC]") || ("\2" == "[HL]"))
             ld A, \2
+        ELSE 
+            _tryLdhIn \2, P2\@
         ENDC
-    ELIF (STRUPR("\2") == "A")
-        IF ("P1\@" >= "$ff00")
-            ldh \1, A
-        ELSE
+    ELIF STRUPR("\2") == "A"
+        IF  (("\1" == "[DE]") || ("\1" == "[BC]") || ("\1" == "[HL]"))
             ld \1, A
+        ELSE
+            _tryLdhOut \1, P1\@
         ENDC
 
-    ; We only need a single instruction when loading 
+    ; We also only need a single instruction when loading 
     ; * r8, r8/n8/[HL]
     ; * [HL], r8/n8
     ; * (so anything without [] unless it's [HL])
@@ -174,30 +204,23 @@ P2\@ EQUS "0"
         ((("{P1\@}" == "0") || (STRUPR("{P1\@}") == "HL")) && ("{P2\@}" == "0"))\
         || (("{P1\@}" == "0") && ((STRUPR("{P2\@}") == "HL") || ("{P2\@}" == "0")))\                
     )
+        WARN "Boom"
         ld \1, \2 
+    ; otherwise, we need to load into A first.
     ELSE
-        ; otherwise, we need to load into A first.
-        IF ("P1\@" >= "$ff00")
-            IF ("P2\@" >= "$ff00")
-                ldh A, \2 
-                ldh \1, A 
-            ELIF ("\2" == "0")
-                ; xor A is cheaper than a load.
-                xor A
-                ldh \1, A
-            ELSE
-                ld A, \2
-                ldh \1, A
-            ENDC
-        ELIF ("P2\@" >= "$ff00")
-            ldh A, \2
-            ld \1, A
-        ELIF ("\2" == "0")
-            xor A
+        ; The assembler raises a syntax error if we try to compare DE or BC to a hex value,
+        ; eg. `IF P1\@ >= $ff00` even if it's in a code branch that won't be reached
+        ; We can get around this by doing that comparison in a separate macro.
+        IF (("\2" == "[DE]") || ("\2" == "[BC]") || ("\2" == "[HL]"))
+            ld A, \2
+        ELSE 
+            _tryLdhIn \2, P2\@
+        ENDC
+
+        IF (("\1" == "[DE]") || ("\1" == "[BC]") || ("\1" == "[HL]"))
             ld \1, A
         ELSE
-            ld A, \2
-            ld \1, A
+            _tryLdhOut \1, P1\@
         ENDC
     ENDC
 endm
@@ -240,7 +263,7 @@ endm
 ; Flags: None
 ;;;
 ldiAny: macro
-    IF "\1\2" == "[HL][HL]"
+    IF ("\1" == "[HL]") && ("\2" == "[HL]")
         FAIL "ambiguous operation"
     ELIF "\1" == "[HL]"
         ldAny A, \2
