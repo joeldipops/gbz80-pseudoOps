@@ -9,7 +9,7 @@ R8 EQUS "\"A B C D E H L a b c d e h l\""
 LBL_CHARS EQUS "\"_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\""
 
 ;;;
-; Adds two values, Result in r8
+; Adds two values, Result in A
 ; addAny r8, [r16]
 ;
 ; addAny r8, [n16]
@@ -25,16 +25,16 @@ IS_P2_N16\@ SET ((STRIN("\2", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")) &
         ldAny A, \1
         add A, \2
     ENDC
-    ldAny \1, A 
+    ldAny \1, A
 endm
 
 ;;;
-; Adds two values + 1 if carry flag set. Result in r8.
+; Adds two values + 1 if carry flag set. Result in A.
 ; adcAny r8, [r16]
 ;;;
 adcAny: macro
     ldAny A, \1
-    adc \2
+    adc A, \2
     ldAny \1, A 
 endm
 
@@ -393,8 +393,15 @@ endm
 ; Flags: Z=? N=0 H=1 C=0
 ;;;
 andAny: macro
-    ldAny A, \1
-    and A, \2
+    IF "\1" != "A"
+        ldAny A, \1
+    ENDC
+    IF "\1" == "\2"
+        and A, A
+        WARN "1: Avoid andAny if you intended to read from \1 more than once."
+    ELSE
+        and A, \2
+    ENDC
 endm
 
 ;;;
@@ -446,8 +453,15 @@ endm
 ; Flags: Z=? N=0 H=0 C=0
 ;;;
 xorAny: macro
-    ldAny A, \1
-    xor A, \2
+    IF "\1" != "A"
+        ldAny A, \1
+    ENDC
+    IF "\1" == "\2"
+        xor A, A
+        WARN "1: Avoid xorAny if you intended to read from \1 more than once."
+    ELSE
+        xor A, \2
+    ENDC
 endm
 
 ;;;
@@ -591,9 +605,11 @@ P2\@ EQUS "\2"
 P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)
     ELSE
 P1\@ EQUS "\1"
-    ENDC    
+    ENDC
 
-    IF IS_P1_R16\@
+    IF ("\1" == "SP") || ("\2" == "SP") || (STRIN("\2", "SP ") != 0) || (STRIN("\2", "SP+") != 0)
+        ld \1, \2
+    ELIF IS_P1_R16\@
         IF IS_P2_R16\@
             ; If both operands are registers
             ld LOW(\1), LOW(\2)

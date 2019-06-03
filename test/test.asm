@@ -11,6 +11,19 @@ SECTION "Home", ROM0[$0150]
 main:
     nop
 
+SP_AMOUNT SET $1235
+
+    ;addAny #[HramStart], #[HramStart]
+    ld16 SP, HL
+    ld16 [$1234], SP
+    ld16 SP, $1234
+    ld16 HL, SP + 255
+    ld16 HL, SP+255
+    ld16 HL, SP_AMOUNT
+    ld16 HL, [SP_AMOUNT]
+    ld16 HL, $1234
+
+
     ldiAny [DE], [HL]
     ;ldiAny [HL], [HL]
     ldiAny [HL], [DE]
