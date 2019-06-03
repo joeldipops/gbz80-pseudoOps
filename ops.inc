@@ -136,68 +136,77 @@ endm
 ;
 ;;;
 ldAny: macro
-    ; To check if an address is in HRAM, we have to strip off the square brackets
-    ; Do this for both operands.
-    IF ((STRIN("\1", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1")))
-P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)    
+    ; Force an ldh?
+    IF (STRSUB("\1", 1, 1) == "#") 
+IS_P1_HRAM\@ SET 1
+; strip off the #
+P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 1)
     ELSE
-P1\@ EQUS "0"
+P1\@ EQUS "\1"
+IS_P2_HRAM\@ SET 0
     ENDC
 
-    IF ((STRIN("\2", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")))
-P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 2)    
+    ; Force an ldh?
+    IF (STRSUB("\2", 1, 1) == "#") 
+IS_P2_HRAM\@ SET 1
+; strip off the #
+P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 1)
     ELSE
-P2\@ EQUS "0"
+P2\@ EQUS "\2"
+IS_P2_HRAM\@ SET 0
     ENDC
 
     ; If loading to or from A, we only need a single instruction.
-    IF (STRUPR("\1") == "A")
-        IF ("\2" == "0")
+    IF STRUPR("\1") == "A"
+        IF IS_P2_HRAM\@ == 1
+            ldh A, P2\@
+        ELIF "\2" == "0"
             xor A
-        ELIF ("P2\@" >= "$ff00")
-            ldh A, \2        
         ELSE
             ld A, \2
         ENDC
-    ELIF (STRUPR("\2") == "A")
-        IF ("P1\@" >= "$ff00")
-            ldh \1, A
+    ELIF STRUPR("\2") == "A"
+        IF IS_P1_HRAM\@ == 1
+            ldh P1\@, A
         ELSE
-            ld \1, A
+            ld A, \2
+        ENDC
+    ELSE
+        ; We only need a single instruction when loading 
+        ; * r8, r8/n8/[HL]
+        ; * [HL], r8/n8
+        ; * (so anything without [] unless it's [HL])
+        IF ((STRIN("{P1\@}", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1")) &&  ("{P1\@}" != "[HL]"))
+IS_P1_DIRECT\@ SET 0
+        ELSE
+IS_P1_DIRECT\@ SET 1
         ENDC
 
-    ; We only need a single instruction when loading 
-    ; * r8, r8/n8/[HL]
-    ; * [HL], r8/n8
-    ; * (so anything without [] unless it's [HL])
-    ELIF (\
-        ((("{P1\@}" == "0") || (STRUPR("{P1\@}") == "HL")) && ("{P2\@}" == "0"))\
-        || (("{P1\@}" == "0") && ((STRUPR("{P2\@}") == "HL") || ("{P2\@}" == "0")))\                
-    )
-        ld \1, \2 
-    ELSE
-        ; otherwise, we need to load into A first.
-        IF ("P1\@" >= "$ff00")
-            IF ("P2\@" >= "$ff00")
-                ldh A, \2 
-                ldh \1, A 
-            ELIF ("\2" == "0")
-                ; xor A is cheaper than a load.
+        IF ((STRIN("{P2\@}", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")) &&  ("{P2\@}" != "[HL]"))
+IS_P2_DIRECT\@ SET 0
+        ELSE
+IS_P2_DIRECT\@ SET 1
+        ENDC
+
+        IF ((IS_P1_DIRECT\@ == 1) && (IS_P2_DIRECT\@ == 1))
+            ld P1\@, P2\@
+        ELSE
+            ; otherwise, we need to load into A first.
+
+            IF "\2" == "0"
+                ; xor A is cheaper than a ld A, 0
                 xor A
-                ldh \1, A
+            ELIF IS_P2_HRAM\@ == 1
+                ldh A, P2\@
             ELSE
                 ld A, \2
-                ldh \1, A
             ENDC
-        ELIF ("P2\@" >= "$ff00")
-            ldh A, \2
-            ld \1, A
-        ELIF ("\2" == "0")
-            xor A
-            ld \1, A
-        ELSE
-            ld A, \2
-            ld \1, A
+
+            IF IS_P1_HRAM\@ == 1
+                ldh P1\@, A
+            ELSE
+                ld \1, A
+            ENDC
         ENDC
     ENDC
 endm
