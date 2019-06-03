@@ -1,6 +1,8 @@
     IF !DEF(PSEUDO_OPS_INCLUDED)
 PSEUDO_OPS_INCLUDED SET 1
 
+INCLUDE "config.inc"
+
 N8 EQUS "\"$ % 0 1 2 3 4 5 6 7 8 9\""
 R16 EQUS "\"BC DE HL bc de hl\""
 R8 EQUS "\"A B C D E H L a b c d e h l\""
@@ -137,7 +139,7 @@ endm
 ;;;
 ldAny: macro
     ; Force an ldh?
-    IF (STRSUB("\1", 1, 1) == "#") 
+    IF (STRSUB("\1", 1, 1) == HRAM_TOKEN) 
 IS_P1_HRAM\@ SET 1
 ; strip off the #
 P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 1)
@@ -147,7 +149,7 @@ IS_P1_HRAM\@ SET 0
     ENDC
 
     ; Force an ldh?
-    IF (STRSUB("\2", 1, 1) == "#") 
+    IF (STRSUB("\2", 1, 1) == HRAM_TOKEN) 
 IS_P2_HRAM\@ SET 1
 ; strip off the #
 P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 1)

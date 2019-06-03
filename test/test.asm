@@ -89,8 +89,38 @@ main:
     ldAny [DE], [jrAliasTest]
     ldAny [DE], [HramStart]
     ldAny [DE], #[HramStart]        
+
+    ldAny B, [DE]
+    ldAny [HL], [DE]
+    ldAny [DE], [DE]
+    ldAny [$1234], [DE]
+    ldAny [JoypadIo], [DE]
+    ldAny #[JoypadIo], [DE]
+    ldAny [jrAliasTest], [DE]
+    ldAny [HramStart], [DE]
+    ldAny #[HramStart], [DE]      
     ;ldAny [DE], #[jrAliasTest] ; should fail
 
+    ldAny [$1234], 0
+    ldAny [$1234], 23
+    ldAny [$1234], B
+    ldAny [$1234], [HL]
+    ldAny [$1234], [DE]
+    ldAny [$1234], [$1234]
+    ldAny [$1234], [$ff12]    
+    ldAny [$1234], #[$ff12]
+    ldAny #[$ff12], [$ff12]        
+    ldAny #[$ff12], #[$ff12]    
+    ldAny [$1234], [JoypadIo]
+    ldAny [$1234], #[JoypadIo]
+    ldAny [$1234], [jrAliasTest]
+    ldAny [$1234], [HramStart]
+    ldAny [$1234], #[HramStart]        
+
+    ldAny #[JoypadIo], #[HramStart]        
+    ldAny #[HramStart], #[JoypadIo]    
+    ldAny [jrAliasTest], [JoypadIo]        
+    ldAny [HramStart], #[JoypadIo]        
     ldAny #[HramStart], #[HramStart]        
 
 jrAliasTest:
