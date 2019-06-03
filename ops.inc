@@ -142,8 +142,7 @@ endm
 ;
 ;;;
 _tryLdhOut: macro
-    IF (DEF("\2") && \2 >= $ff00)
-        FAIL "Boom"
+    IF (\2 >= $ff00)
         ldh \1, A
     ELSE
         ld \1, A
@@ -186,14 +185,22 @@ P2\@ EQUS "0"
     IF STRUPR("\1") == "A"
         IF (("\2" == "[DE]") || ("\2" == "[BC]") || ("\2" == "[HL]"))
             ld A, \2
-        ELSE 
+        ELIF (STRIN("$%0123456789", STRSUB("\2", 2, 1)) != 0)
             _tryLdhIn \2, P2\@
+        ELIF DEF({P2\@})
+            _tryLdhIn \2, P2\@
+        ELSE
+            ld A, \2
         ENDC
     ELIF STRUPR("\2") == "A"
         IF  (("\1" == "[DE]") || ("\1" == "[BC]") || ("\1" == "[HL]"))
             ld \1, A
-        ELSE
+        ELIF (STRIN("$%0123456789", STRSUB("\1", 2, 1)) != 0)
             _tryLdhOut \1, P1\@
+        ELIF DEF(P1\@)
+            _tryLdhOut \1, P1\@
+        ELSE
+            ld \1, A            
         ENDC
 
     ; We also only need a single instruction when loading 
@@ -204,7 +211,6 @@ P2\@ EQUS "0"
         ((("{P1\@}" == "0") || (STRUPR("{P1\@}") == "HL")) && ("{P2\@}" == "0"))\
         || (("{P1\@}" == "0") && ((STRUPR("{P2\@}") == "HL") || ("{P2\@}" == "0")))\                
     )
-        WARN "Boom"
         ld \1, \2 
     ; otherwise, we need to load into A first.
     ELSE

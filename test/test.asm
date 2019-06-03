@@ -10,6 +10,16 @@ SECTION "Header", ROM0[$0100]
 SECTION "Home", ROM0[$0150]
 main:
     nop
+    ldAny A, [JoypadIo]
+    ;ld A, [jrAliasTest]
+    ldAny A, [jrAliasTest]
+    ldAny A, $10
+    ldAny A, [$1200]
+    ldAny [JoypadIo], A
+    ldAny [jrAliasTest], A
+    ldAny [$1200], A
+
+
 
 jrAliasTest:
     jrlte @+12
