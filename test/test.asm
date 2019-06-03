@@ -11,6 +11,14 @@ SECTION "Home", ROM0[$0150]
 main:
     nop
 
+    ldiAny [DE], [HL]
+    ;ldiAny [HL], [HL]
+    ldiAny [HL], [DE]
+    ;ldiAny [DE], [DE]
+
+    ldiAny #[HramStart], [HL]
+
+
     ldAny A, 0
     ldAny A, 23
     ldAny A, B

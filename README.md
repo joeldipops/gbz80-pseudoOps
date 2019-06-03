@@ -78,15 +78,14 @@ Symbol|Def
 
 ### ldAny
 
-Will perform the fastest/smallest ld it can, such as using the ldh instruction where appropriate.
-Be careful when calling from macros - The parser won't select the optimal path with something like `ldAny LOW(PARAM_1\@), PARAM_2\@`
-If you still want to use ldAny, you can use `{}` around assembler variables eg `ldAny LOW({PARAM_2\@}), {PARAM_2\@}`
+Will perform the fastest/smallest 8 bit `ld` it can.  Prepending an address or label with `#` will cause the `ldh` pnemonic to be used when loading to/from that address.  You can change this token to whatever you want by changing `LDH_TOKEN` in *config.inc*
+Be careful when calling from macros - Currently the parser can confused with something like `ldAny LOW(PARAM_1\@), PARAM_2\@`.  You can use `{}` around assembler variables eg `ldAny LOW({PARAM_2\@}), {PARAM_2\@}` for the right behaviour.
 
 **ldAny A, 0**
 * Assembles to `xor A, A`
 
 **ldAny [r16], 0**
-**ldAny [$ff00 + n8], 0**
+**ldAny #[$ff00 + n8], 0**
 * Cycles: 4
 * Bytes: 3
 * Flags
@@ -100,30 +99,30 @@ If you still want to use ldAny, you can use `{}` around assembler variables eg `
 * Bytes: 4    
 * Flags: As above
 
-**ldAny [$ff00 + n8], r8**
-**ldAny r8, [$ff00 + n8]**
+**ldAny #[$ff00 + n8], r8**
+**ldAny r8, #[$ff00 + n8]**
 * Cycles: 4
 * Bytes: 3
 * Flags: None
 
-**ldAny [$ff00 + n8], [r16]**
-**ldAny [r16], [$ff00 + n8]**
+**ldAny #[$ff00 + n8], [r16]**
+**ldAny [r16], #[$ff00 + n8]**
 * Cycles: 5
 * Bytes: 3
 * Flags: None
 
-**ldAny [$ff00 + n8], [$ff00 + n8]**
+**ldAny #[$ff00 + n8], #[$ff00 + n8]**
 * Cycles: 6
 * Bytes: 4
 * Flags: None
 
-**ldAny [$ff00 + n8], [n16]**
-**ldAny [n16], [$ff00 + n8]**
+**ldAny #[$ff00 + n8], [n16]**
+**ldAny [n16], #[$ff00 + n8]**
 * Cycles: 7 
 * Bytes: 5
 * Flags: None
 
-**ldAny [$ff00 + n8], n8**
+**ldAny #[$ff00 + n8], n8**
 * Cycles: 5
 * Bytes: 4
 * Flags: None

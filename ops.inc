@@ -139,7 +139,7 @@ endm
 ;;;
 ldAny: macro
     ; Force an ldh?
-    IF (STRSUB("\1", 1, 1) == HRAM_TOKEN) 
+    IF (STRSUB("\1", 1, 1) == LDH_TOKEN) 
 IS_P1_HRAM\@ SET 1
 ; strip off the #
 P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 1)
@@ -149,7 +149,7 @@ IS_P1_HRAM\@ SET 0
     ENDC
 
     ; Force an ldh?
-    IF (STRSUB("\2", 1, 1) == HRAM_TOKEN) 
+    IF (STRSUB("\2", 1, 1) == LDH_TOKEN) 
 IS_P2_HRAM\@ SET 1
 ; strip off the #
 P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 1)
@@ -257,7 +257,7 @@ endm
 ; Flags: None
 ;;;
 ldiAny: macro
-    IF "\1\2" == "[HL][HL]"
+    IF ("\1" == "[HL]") && ("\2" == "[HL]")
         FAIL "ambiguous operation"
     ELIF "\1" == "[HL]"
         ldAny A, \2
@@ -271,7 +271,7 @@ ldiAny: macro
 endm
 
 lddAny: macro
-    IF "\1\2" == "[HL][HL]"
+    IF ("\1" == "[HL]") && ("\2" == "[HL]")
         FAIL "ambiguous operation"
     ELIF "\1" == "[HL]"
         ldAny A, \2
