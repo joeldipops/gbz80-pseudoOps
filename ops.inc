@@ -189,7 +189,12 @@ IS_P2_DIRECT\@ SET 1
         ENDC
 
         IF ((IS_P1_DIRECT\@ == 1) && (IS_P2_DIRECT\@ == 1))
-            ld P1\@, P2\@
+            IF ("{P1\@}" == "[HL]") && ("{P2\@}" == "[HL]")
+                ld A, [HL]
+                ld [HL], A
+            ELSE
+                ld P1\@, P2\@
+            ENDC
         ELSE
             ; otherwise, we need to load into A first.
 

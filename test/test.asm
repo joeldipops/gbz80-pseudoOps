@@ -23,6 +23,16 @@ main:
     ldAny A, [HramStart]
     ldAny A, #[HramStart]
 
+    ldAny B, A
+    ldAny [HL], A
+    ldAny [DE], A
+    ldAny [$1234], A
+    ldAny [JoypadIo], A
+    ldAny #[JoypadIo], A
+    ldAny [jrAliasTest], A
+    ldAny [HramStart], A
+    ldAny #[HramStart], A  
+
     ldAny B, 0
     ldAny B, 23
     ldAny B, B
@@ -31,9 +41,42 @@ main:
     ldAny B, [$1234]
     ldAny B, [JoypadIo]
     ldAny B, #[JoypadIo]
-    ;ldAny B, [jrAliasTest]
+    ldAny B, [jrAliasTest]
     ldAny B, [HramStart]
-    ldAny B, #[HramStart]    
+    ldAny B, #[HramStart] 
+
+    ldAny B, B
+    ldAny [HL], B
+    ldAny [DE], B
+    ldAny [$1234], B
+    ldAny [JoypadIo], B
+    ldAny #[JoypadIo], B
+    ldAny [jrAliasTest], B
+    ldAny [HramStart], B
+    ldAny #[HramStart], B         
+
+    ldAny [HL], 0
+    ldAny [HL], 23
+    ldAny [HL], B
+    ldAny [HL], [HL]
+    ldAny [HL], [DE]
+    ldAny [HL], [$1234]
+    ldAny [HL], [JoypadIo]
+    ldAny [HL], #[JoypadIo]
+    ldAny [HL], [jrAliasTest]
+    ldAny [HL], [HramStart]
+    ldAny [HL], #[HramStart]        
+    ;ldAny [HL], #[jrAliasTest] ; should fail    
+
+    ldAny B, [HL]
+    ldAny [HL], [HL]
+    ldAny [DE], [HL]
+    ldAny [$1234], [HL]
+    ldAny [JoypadIo], [HL]
+    ldAny #[JoypadIo], [HL]
+    ldAny [jrAliasTest], [HL]
+    ldAny [HramStart], [HL]
+    ldAny #[HramStart], [HL]      
 
     ldAny [DE], 0
     ldAny [DE], 23
@@ -68,8 +111,8 @@ multTest:
     jp main
 
 ldilddTest:
-    ldiAny [HL], A
-    lddAny [HL], A
+    ldiAny [HL], B
+    lddAny [HL], B
 
 ;;; 
 ; H=1 N=0 and H=0 N=1 cases 
@@ -77,37 +120,37 @@ ldilddTest:
 jrAnyTest1:
 .start
 
-    and A, A
+    and A, B
     jrAny NN, .nnyes
     jp .start
 .nnyes
-    xor A, A
+    xor A, B
     cp A,A
     jrAny NN, .start
 
-    xor A, A
-    cp A, A
+    xor A, B
+    cp A, B
     jrAny NH, .nhyes
     jp .start
 .nhyes
-    and A, A
+    and A, B
     jrAny NH, .start
 
-    and A, A
+    and A, B
     jrAny H, .hyes
     jp .start
 
 .hyes
-    xor A, A
-    cp A, A
+    xor A, B
+    cp A, B
     jrAny H, .end
 
-    xor A, A
-    cp A, A
+    xor A, B
+    cp A, B
     jrAny N, .nyes
     jp .start
 .nyes
-    and A, A
+    and A, B
     jrAny N, .end
 
     jp jrAnyTest2
