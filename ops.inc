@@ -143,7 +143,7 @@ IS_P1_HRAM\@ SET 1
 P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 1)
     ELSE
 P1\@ EQUS "\1"
-IS_P2_HRAM\@ SET 0
+IS_P1_HRAM\@ SET 0
     ENDC
 
     ; Force an ldh?
@@ -204,6 +204,7 @@ IS_P2_DIRECT\@ SET 1
 
             IF IS_P1_HRAM\@ == 1
                 ldh P1\@, A
+            
             ELSE
                 ld \1, A
             ENDC

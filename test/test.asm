@@ -11,6 +11,45 @@ SECTION "Home", ROM0[$0150]
 main:
     nop
 
+    ldAny A, 0
+    ldAny A, 23
+    ldAny A, B
+    ldAny A, [HL]
+    ldAny A, [DE]
+    ldAny A, [$1234]
+    ldAny A, [JoypadIo]
+    ldAny A, #[JoypadIo]
+    ldAny A, [jrAliasTest]
+    ldAny A, [HramStart]
+    ldAny A, #[HramStart]
+
+    ldAny B, 0
+    ldAny B, 23
+    ldAny B, B
+    ldAny B, [HL]
+    ldAny B, [DE]
+    ldAny B, [$1234]
+    ldAny B, [JoypadIo]
+    ldAny B, #[JoypadIo]
+    ;ldAny B, [jrAliasTest]
+    ldAny B, [HramStart]
+    ldAny B, #[HramStart]    
+
+    ldAny [DE], 0
+    ldAny [DE], 23
+    ldAny [DE], B
+    ldAny [DE], [HL]
+    ldAny [DE], [DE]
+    ldAny [DE], [$1234]
+    ldAny [DE], [JoypadIo]
+    ldAny [DE], #[JoypadIo]
+    ldAny [DE], [jrAliasTest]
+    ldAny [DE], [HramStart]
+    ldAny [DE], #[HramStart]        
+    ;ldAny [DE], #[jrAliasTest] ; should fail
+
+    ldAny #[HramStart], #[HramStart]        
+
 jrAliasTest:
     jrlte @+12
     jrlte @+12
@@ -26,7 +65,7 @@ multTest:
     ld HL, $c000
     ldAny [HL], 7
     mult [HL]
-    jr main
+    jp main
 
 ldilddTest:
     ldiAny [HL], A
@@ -118,6 +157,8 @@ jrAnyTest2:
 passed:
     nop
 
+SECTION "HRAM", HRAM[$ff80]
+HramStart: ds 1
     ENDC 
     
 
