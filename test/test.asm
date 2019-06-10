@@ -13,6 +13,9 @@ main:
 
 SP_AMOUNT SET $1235
 
+    ldAny BC, $1234
+    ldAny BC, #[HramStart]
+
     ;addAny #[HramStart], #[HramStart]
     ld16 SP, HL
     ld16 [$1234], SP

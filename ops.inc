@@ -138,82 +138,86 @@ endm
 ;
 ;;;
 ldAny: macro
-    ; Force an ldh?
-    IF (STRSUB("\1", 1, 1) == LDH_TOKEN) 
+    ; Are 16 bits involved?
+    IF ((STRIN(R16, "\1") != 0) && (STRLEN("\1") == 2)) || ((STRIN(R16, "\2") != 0) && (STRLEN("\1") == 2)); || (\1 > $ff) || (\2 > $ff)
+        ld16 \1, \2
+    ELSE
+        ; Force an ldh?
+        IF (STRSUB("\1", 1, 1) == LDH_TOKEN) 
 IS_P1_HRAM\@ SET 1
 ; strip off the #
 P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 1)
-    ELSE
+        ELSE
 P1\@ EQUS "\1"
 IS_P1_HRAM\@ SET 0
-    ENDC
+        ENDC
 
-    ; Force an ldh?
-    IF (STRSUB("\2", 1, 1) == LDH_TOKEN) 
+        ; Force an ldh?
+        IF (STRSUB("\2", 1, 1) == LDH_TOKEN) 
 IS_P2_HRAM\@ SET 1
 ; strip off the #
 P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 1)
-    ELSE
+        ELSE
 P2\@ EQUS "\2"
 IS_P2_HRAM\@ SET 0
-    ENDC
-
-    ; If loading to or from A, we only need a single instruction.
-    IF STRUPR("\1") == "A"
-        IF IS_P2_HRAM\@ == 1
-            ldh A, P2\@
-        ELIF "\2" == "0"
-            xor A
-        ELSE
-            ld A, \2
-        ENDC
-    ELIF STRUPR("\2") == "A"
-        IF IS_P1_HRAM\@ == 1
-            ldh P1\@, A
-        ELSE
-            ld A, \2
-        ENDC
-    ELSE
-        ; We only need a single instruction when loading 
-        ; * r8, r8/n8/[HL]
-        ; * [HL], r8/n8
-        ; * (so anything without [] unless it's [HL])
-        IF ((STRIN("{P1\@}", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1")) &&  ("{P1\@}" != "[HL]"))
-IS_P1_DIRECT\@ SET 0
-        ELSE
-IS_P1_DIRECT\@ SET 1
         ENDC
 
-        IF ((STRIN("{P2\@}", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")) &&  ("{P2\@}" != "[HL]"))
-IS_P2_DIRECT\@ SET 0
-        ELSE
-IS_P2_DIRECT\@ SET 1
-        ENDC
-
-        IF ((IS_P1_DIRECT\@ == 1) && (IS_P2_DIRECT\@ == 1))
-            IF ("{P1\@}" == "[HL]") && ("{P2\@}" == "[HL]")
-                ld A, [HL]
-                ld [HL], A
-            ELSE
-                ld P1\@, P2\@
-            ENDC
-        ELSE
-            ; otherwise, we need to load into A first.
-
-            IF "\2" == "0"
-                ; xor A is cheaper than a ld A, 0
-                xor A
-            ELIF IS_P2_HRAM\@ == 1
+        ; If loading to or from A, we only need a single instruction.
+        IF STRUPR("\1") == "A"
+            IF IS_P2_HRAM\@ == 1
                 ldh A, P2\@
+            ELIF "\2" == "0"
+                xor A
             ELSE
                 ld A, \2
             ENDC
-
+        ELIF STRUPR("\2") == "A"
             IF IS_P1_HRAM\@ == 1
                 ldh P1\@, A
-            
             ELSE
-                ld \1, A
+                ld A, \2
+            ENDC
+        ELSE
+            ; We only need a single instruction when loading 
+            ; * r8, r8/n8/[HL]
+            ; * [HL], r8/n8
+            ; * (so anything without [] unless it's [HL])
+            IF ((STRIN("{P1\@}", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1")) &&  ("{P1\@}" != "[HL]"))
+IS_P1_DIRECT\@ SET 0
+            ELSE
+IS_P1_DIRECT\@ SET 1
+            ENDC
+
+            IF ((STRIN("{P2\@}", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")) &&  ("{P2\@}" != "[HL]"))
+IS_P2_DIRECT\@ SET 0
+            ELSE
+IS_P2_DIRECT\@ SET 1
+            ENDC
+
+            IF ((IS_P1_DIRECT\@ == 1) && (IS_P2_DIRECT\@ == 1))
+                IF ("{P1\@}" == "[HL]") && ("{P2\@}" == "[HL]")
+                    ld A, [HL]
+                    ld [HL], A
+                ELSE
+                    ld P1\@, P2\@
+                ENDC
+            ELSE
+                ; otherwise, we need to load into A first.
+
+                IF "\2" == "0"
+                    ; xor A is cheaper than a ld A, 0
+                    xor A
+                ELIF IS_P2_HRAM\@ == 1
+                    ldh A, P2\@
+                ELSE
+                    ld A, \2
+                ENDC
+
+                IF IS_P1_HRAM\@ == 1
+                    ldh P1\@, A
+                ELSE
+                    ld \1, A
+                ENDC
             ENDC
         ENDC
     ENDC
@@ -593,18 +597,42 @@ ld16: macro
 IS_P1_R16\@ SET (STRLEN("\1") == 2 && STRIN(R16, "\1") != 0)
 IS_P2_R16\@ SET (STRLEN("\2") == 2 && STRIN(R16, "\2") != 0)
 
-    ; Remove the square brackets around \2 so we can find the following address ie. [\2 + 1]
-    IF ((STRIN("\2", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")))
-P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 2)
-    ELSE
-P2\@ EQUS "\2"
-    ENDC    
+IS_P1_HRAM\@ SET (STRSUB("\1", 1, 1) == "#")
 
-    ; Remove the square brackets around \1 so we can find the following address ie. [\1 + 1]
-    IF (STRIN("\1", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1"))
-P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)
+    ; Remove the ldh token and square brackets so we can find the following address ie. [\2 + 1]
+    IF (STRSUB("\2", 1, 1) == LDH_TOKEN)
+IS_P2_HRAM\@ SET 1
+        ; Remove #[ and ]
+        IF ((STRIN("\2", "[") == 2) && (STRIN("\2", "]") == STRLEN("\2")))
+P2\@ EQUS STRSUB("\2", 3, STRLEN("\2") - 3)
+        ELSE
+P2\@ EQUS "\2"
+        ENDC    
     ELSE
+        ; Remove [ and ]
+        IF ((STRIN("\2", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")))
+P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 2)
+        ELSE
+P2\@ EQUS "\2"
+        ENDC    
+    ENDC
+
+    ; Remove the ldh token and square brackets so we can find the following address ie. [\2 + 1]
+    IF (STRSUB("\1", 1, 1) == LDH_TOKEN)
+IS_P1_HRAM\@ SET 1
+        ; Remove #[ and ]
+        IF ((STRIN("\1", "[") == 2) && (STRIN("\1", "]") == STRLEN("\1")))
+P1\@ EQUS STRSUB("\1", 3, STRLEN("\1") - 3)
+        ELSE
 P1\@ EQUS "\1"
+        ENDC    
+    ELSE
+        ; Remove [ and ]
+        IF ((STRIN("\1", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1")))
+P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)
+        ELSE
+P1\@ EQUS "\1"
+        ENDC    
     ENDC
 
     IF ("\1" == "SP") || ("\2" == "SP") || (STRIN("\2", "SP ") != 0) || (STRIN("\2", "SP+") != 0)
