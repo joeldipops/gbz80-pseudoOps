@@ -864,12 +864,12 @@ P1\@ EQUS "C"
         sla L
         rla
         cp P1\@
-        jr C, .return\@
+        jr C, .carry\@
             inc L
             sub P1\@
-            dec H
-            jr NZ, .loop\@
-.return\@
+.carry\@
+        dec H
+        jr NZ, .loop\@
 endm
 
 INCLUDE "jumps.inc"
