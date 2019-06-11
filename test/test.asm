@@ -13,6 +13,7 @@ main:
 
 SP_AMOUNT SET $1235
 
+    divide [$1234]
     ldAny BC, $1234
     ldAny BC, #[HramStart]
 

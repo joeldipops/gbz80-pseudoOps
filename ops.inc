@@ -842,5 +842,35 @@ HAS_SIDE_AFFECTS\@ SET 1
     ENDC 
 endm
 
+;;;
+; div A, r8
+;
+; Divides A by r8, quotient in HL, remainder in A.
+; If r8 is not one of B,C,D or E, C will be trashed
+;;;
+divide: macro
+    IF STRIN("D E B C", "\1") != 0
+P1\@ EQUS "\1"
+    ELSE
+        ldAny C, \1
+P1\@ EQUS "C"
+    ENDC
+
+    ld H, 8
+    ld L, A
+
+    xor A
+.loop\@
+        sla L
+        rla
+        cp P1\@
+        jr C, .return\@
+            inc L
+            sub P1\@
+            dec H
+            jr NZ, .loop\@
+.return\@
+endm
+
 INCLUDE "jumps.inc"
     ENDC
