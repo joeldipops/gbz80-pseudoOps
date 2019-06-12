@@ -12,13 +12,19 @@ main:
     nop
 
 SP_AMOUNT SET $1235
+    ldAny #[HramStart], #[HramStart]
+    ldAny BC, #[HramStart]    
+
+    ldAny [HramStart], [HramStart]
+    ldAny BC, [HramStart]        
+
     ld A, 4
     divide 0
-    ;ld A, 5
-    ;divide 2
-    ;divide #[$ffff]
-    ;divide [$1234]
-    ;divide [BC]
+    ld A, 5
+    divide 2
+    divide #[$ffff]
+    divide [$1234]
+    divide [BC]
     nop
     nop
     ldAny BC, $1234

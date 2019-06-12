@@ -9,6 +9,16 @@ R8 EQUS "\"A B C D E H L a b c d e h l\""
 LBL_CHARS EQUS "\"_abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ\""
 
 ;;;
+; Shows an assembly warning message unless they have been surpressed in the config.
+; @param \1 The text of the warning.
+;;;
+_warn: macro
+    IF WARNINGS_ENABLED == 1
+        WARN \1
+    ENDC
+endm
+
+;;;
 ; Adds two values, Result in A
 ; addAny r8, [r16]
 ;
@@ -143,17 +153,17 @@ ldAny: macro
         ld16 \1, \2
     ELSE
         ; Force an ldh?
-        IF (STRSUB("\1", 1, 1) == LDH_TOKEN) 
+        IF (STRSUB("\1", 1, STRLEN(LDH_TOKEN)) == LDH_TOKEN) 
 IS_P1_HRAM\@ SET 1
 ; strip off the #
-P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 1)
+P1\@ EQUS STRSUB("\1", STRLEN(LDH_TOKEN) + 1, STRLEN("\1") - STRLEN(LDH_TOKEN))
         ELSE
 P1\@ EQUS "\1"
 IS_P1_HRAM\@ SET 0
         ENDC
 
         ; Force an ldh?
-        IF (STRSUB("\2", 1, 1) == LDH_TOKEN) 
+        IF (STRSUB("\2", 1, STRLEN(LDH_TOKEN)) == LDH_TOKEN) 
 IS_P2_HRAM\@ SET 1
 ; strip off the #
 P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 1)
@@ -342,7 +352,7 @@ orAny: macro
     ENDC
     IF "\1" == "\2"
         or A, A
-        WARN "1: Avoid orAny if you intended to read from \1 more than once."
+        _warn "1: Avoid orAny if you intended to read from \1 more than once."
     ELSE
         or A, \2
     ENDC
@@ -402,7 +412,7 @@ andAny: macro
     ENDC
     IF "\1" == "\2"
         and A, A
-        WARN "1: Avoid andAny if you intended to read from \1 more than once."
+        _warn "1: Avoid andAny if you intended to read from \1 more than once."
     ELSE
         and A, \2
     ENDC
@@ -462,7 +472,7 @@ xorAny: macro
     ENDC
     IF "\1" == "\2"
         xor A, A
-        WARN "1: Avoid xorAny if you intended to read from \1 more than once."
+        _warn "1: Avoid xorAny if you intended to read from \1 more than once."
     ELSE
         xor A, \2
     ENDC
@@ -597,14 +607,15 @@ ld16: macro
 IS_P1_R16\@ SET (STRLEN("\1") == 2 && STRIN(R16, "\1") != 0)
 IS_P2_R16\@ SET (STRLEN("\2") == 2 && STRIN(R16, "\2") != 0)
 
-IS_P1_HRAM\@ SET (STRSUB("\1", 1, 1) == "#")
+IS_P1_HRAM\@ SET 0
+IS_P2_HRAM\@ SET 0
 
     ; Remove the ldh token and square brackets so we can find the following address ie. [\2 + 1]
-    IF (STRSUB("\2", 1, 1) == LDH_TOKEN)
+    IF (STRSUB("\2", 1, STRLEN(LDH_TOKEN)) == LDH_TOKEN)
 IS_P2_HRAM\@ SET 1
         ; Remove #[ and ]
         IF ((STRIN("\2", "[") == 2) && (STRIN("\2", "]") == STRLEN("\2")))
-P2\@ EQUS STRSUB("\2", 3, STRLEN("\2") - 3)
+P2\@ EQUS STRSUB("\2", STRLEN(LDH_TOKEN) + 2, STRLEN("\2") - (STRLEN(LDH_TOKEN) + 2))
         ELSE
 P2\@ EQUS "\2"
         ENDC    
@@ -618,11 +629,11 @@ P2\@ EQUS "\2"
     ENDC
 
     ; Remove the ldh token and square brackets so we can find the following address ie. [\2 + 1]
-    IF (STRSUB("\1", 1, 1) == LDH_TOKEN)
+    IF (STRSUB("\1", 1, STRLEN(LDH_TOKEN)) == LDH_TOKEN)
 IS_P1_HRAM\@ SET 1
         ; Remove #[ and ]
         IF ((STRIN("\1", "[") == 2) && (STRIN("\1", "]") == STRLEN("\1")))
-P1\@ EQUS STRSUB("\1", 3, STRLEN("\1") - 3)
+P1\@ EQUS STRSUB("\1", STRLEN(LDH_TOKEN) + 2, STRLEN("\1") - (STRLEN(LDH_TOKEN) + 2))
         ELSE
 P1\@ EQUS "\1"
         ENDC    
@@ -635,6 +646,18 @@ P1\@ EQUS "\1"
         ENDC    
     ENDC
 
+    IF IS_P1_HRAM\@ == 1
+P1PREFIX\@ EQUS LDH_TOKEN
+    ELSE
+P1PREFIX\@ EQUS ""
+    ENDC
+
+    IF IS_P2_HRAM\@ == 1
+P2PREFIX\@ EQUS LDH_TOKEN
+    ELSE
+P2PREFIX\@ EQUS ""
+    ENDC
+
     IF ("\1" == "SP") || ("\2" == "SP") || (STRIN("\2", "SP ") != 0) || (STRIN("\2", "SP+") != 0)
         ld \1, \2
     ELIF IS_P1_R16\@
@@ -644,17 +667,17 @@ P1\@ EQUS "\1"
             ld HIGH(\1), HIGH(\2)
         ELSE
             ; If only first operand is a register
-            ldAny HIGH(\1), [P2\@]
-            ldAny LOW(\1), [P2\@ + 1]
+            ldAny HIGH(\1), {P2PREFIX\@}[P2\@]
+            ldAny LOW(\1), {P2PREFIX\@}[P2\@ + 1]
         ENDC
     ELIF IS_P2_R16\@
         ; If only second operand is a register
-        ldAny [P1\@], HIGH(\2)
-        ldAny [P1\@ + 1], LOW(\2)
+        ldAny {P1PREFIX\@}[P1\@], HIGH(\2)
+        ldAny {P1PREFIX\@}[P1\@ + 1], LOW(\2)
     ELSE
         ; If both are addresses
-        ldAny [P1\@], [P2\@]
-        ldAny [P1\@ + 1], [P2\@ + 1]
+        ldAny {P1PREFIX\@}[P1\@], {P2PREFIX\@}[P2\@]
+        ldAny {P1PREFIX\@}[P1\@ + 1], {P2PREFIX\@}[P2\@ + 1]
     ENDC
 endm
 
@@ -855,11 +878,17 @@ P1\@ EQUS "\1"
         ldAny C, \1
 P1\@ EQUS "C"
     ENDC
-
     ld H, 8
     ld L, A
 
     xor A
+    IF "{ERROR_HANDLER}" != ""
+        FAIL "blah"
+        cp P1\@
+        jr NZ, .noError\@
+        ERROR_HANDLER
+.noError\@
+    ENDC    
 .loop\@
         sla L
         rla
