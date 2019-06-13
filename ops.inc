@@ -149,7 +149,7 @@ endm
 ;;;
 ldAny: macro
     ; Are 16 bits involved?
-    IF ((STRIN(R16, "\1") != 0) && (STRLEN("\1") == 2)) || ((STRIN(R16, "\2") != 0) && (STRLEN("\1") == 2)); || (\1 > $ff) || (\2 > $ff)
+    IF ((STRIN(R16, "\1") != 0) && (STRLEN("\1") == 2)) || ((STRIN(STRCAT(R16,"SP"), "\2") != 0) && (STRLEN("\2") == 2)); || (\1 > $ff) || (\2 > $ff)
         ld16 \1, \2
     ELSE
         ; Force an ldh?
@@ -607,12 +607,10 @@ ld16: macro
 IS_P1_R16\@ SET (STRLEN("\1") == 2 && STRIN(R16, "\1") != 0)
 IS_P2_R16\@ SET (STRLEN("\2") == 2 && STRIN(R16, "\2") != 0)
 
-IS_P1_HRAM\@ SET 0
-IS_P2_HRAM\@ SET 0
-
     ; Remove the ldh token and square brackets so we can find the following address ie. [\2 + 1]
     IF (STRSUB("\2", 1, STRLEN(LDH_TOKEN)) == LDH_TOKEN)
 IS_P2_HRAM\@ SET 1
+P2PREFIX\@ EQUS LDH_TOKEN
         ; Remove #[ and ]
         IF ((STRIN("\2", "[") == 2) && (STRIN("\2", "]") == STRLEN("\2")))
 P2\@ EQUS STRSUB("\2", STRLEN(LDH_TOKEN) + 2, STRLEN("\2") - (STRLEN(LDH_TOKEN) + 2))
@@ -620,6 +618,7 @@ P2\@ EQUS STRSUB("\2", STRLEN(LDH_TOKEN) + 2, STRLEN("\2") - (STRLEN(LDH_TOKEN) 
 P2\@ EQUS "\2"
         ENDC    
     ELSE
+P2PREFIX\@ EQUS ""
         ; Remove [ and ]
         IF ((STRIN("\2", "[") == 1) && (STRIN("\2", "]") == STRLEN("\2")))
 P2\@ EQUS STRSUB("\2", 2, STRLEN("\2") - 2)
@@ -631,6 +630,7 @@ P2\@ EQUS "\2"
     ; Remove the ldh token and square brackets so we can find the following address ie. [\2 + 1]
     IF (STRSUB("\1", 1, STRLEN(LDH_TOKEN)) == LDH_TOKEN)
 IS_P1_HRAM\@ SET 1
+P1PREFIX\@ EQUS LDH_TOKEN
         ; Remove #[ and ]
         IF ((STRIN("\1", "[") == 2) && (STRIN("\1", "]") == STRLEN("\1")))
 P1\@ EQUS STRSUB("\1", STRLEN(LDH_TOKEN) + 2, STRLEN("\1") - (STRLEN(LDH_TOKEN) + 2))
@@ -638,24 +638,13 @@ P1\@ EQUS STRSUB("\1", STRLEN(LDH_TOKEN) + 2, STRLEN("\1") - (STRLEN(LDH_TOKEN) 
 P1\@ EQUS "\1"
         ENDC    
     ELSE
+P1PREFIX\@ EQUS ""    
         ; Remove [ and ]
         IF ((STRIN("\1", "[") == 1) && (STRIN("\1", "]") == STRLEN("\1")))
 P1\@ EQUS STRSUB("\1", 2, STRLEN("\1") - 2)
         ELSE
 P1\@ EQUS "\1"
         ENDC    
-    ENDC
-
-    IF IS_P1_HRAM\@ == 1
-P1PREFIX\@ EQUS LDH_TOKEN
-    ELSE
-P1PREFIX\@ EQUS ""
-    ENDC
-
-    IF IS_P2_HRAM\@ == 1
-P2PREFIX\@ EQUS LDH_TOKEN
-    ELSE
-P2PREFIX\@ EQUS ""
     ENDC
 
     IF ("\1" == "SP") || ("\2" == "SP") || (STRIN("\2", "SP ") != 0) || (STRIN("\2", "SP+") != 0)
@@ -839,7 +828,7 @@ HAS_SIDE_AFFECTS\@ SET 1
 
     ; Skip this step if we're already using that register.
     IF (STRSUB("{TEMP\@}", 2, 1) != "{VALUE\@}")
-        ldAny LOW({TEMP\@}), {VALUE\@}
+        ldAny LOW(TEMP\@), {VALUE\@}
     ENDC    
 
     ld H, A

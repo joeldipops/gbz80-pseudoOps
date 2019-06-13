@@ -12,6 +12,18 @@ main:
     nop
 
 SP_AMOUNT SET $1235
+    mult B
+    mult [HL]
+    mult $12
+    mult [$1234]
+
+    ;ldAny BC, DE
+
+    ;ldAny HL, SP + 1
+    ldAny [$1234], SP
+    ldAny #[HramStart], BC
+
+
     ldAny #[HramStart], #[HramStart]
     ldAny BC, #[HramStart]    
 
