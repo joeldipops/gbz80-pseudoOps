@@ -148,8 +148,12 @@ endm
 ;
 ;;;
 ldAny: macro
+    ;FAIL "\1 \2"
     ; Are 16 bits involved?
-    IF ((STRIN(R16, "\1") != 0) && (STRLEN("\1") == 2)) || ((STRIN(STRCAT(R16,"SP"), "\2") != 0) && (STRLEN("\2") == 2)); || (\1 > $ff) || (\2 > $ff)
+    IF ((STRIN(STRCAT(R16,"SP"), "\1") != 0) && (STRLEN("\1") == 2)) \
+    || ((STRIN(STRCAT(R16,"SP"), "\2") != 0) && (STRLEN("\2") == 2)) \
+    || (STRIN("\2", "SP ") == 1) \
+    || (STRIN("\2", "SP+") == 1)
         ld16 \1, \2
     ELSE
         ; Force an ldh?
@@ -647,8 +651,32 @@ P1\@ EQUS "\1"
         ENDC    
     ENDC
 
-    IF ("\1" == "SP") || ("\2" == "SP") || (STRIN("\2", "SP ") != 0) || (STRIN("\2", "SP+") != 0)
-        ld \1, \2
+    ; ops that support SP are a bit of a mixed bag, so will need special cases for them.
+    IF ("\1" == "SP")
+        ; Natively supported SP ops are `ld SP, HL` and `ld SP, n16
+        IF ("\2" == "HL") || ((IS_P2_R16\@ == 0) && (STRIN("\2", "[") == 0))
+            ld \1, \2
+        ELSE
+            ; HL will be affected
+            ldAny HL, \2
+            ld SP, HL
+        ENDC
+    ELIF (STRIN("\2", "SP ") != 0) || (STRIN("\2", "SP+") != 0)
+        ; normal 'LDHL'
+        ld HL, \2        
+        IF ("\1" != "HL")
+            ldAny \1, HL
+        ENDC
+    ELIF ("\2" == "SP")
+        IF (STRIN("\1", "[") != 0)
+            ld \1, SP
+        ELSE
+            ; assembler won't assemble without the +0
+            ld HL, SP+0
+            IF ("\1" != "HL")
+                ldAny \1, HL
+            ENDC
+        ENDC
     ELIF IS_P1_R16\@
         IF IS_P2_R16\@
             ; If both operands are registers
