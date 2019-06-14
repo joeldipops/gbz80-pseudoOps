@@ -146,6 +146,17 @@ endm
 ; Bytes:
 ; Flags: None
 ;
+; ldAny r16, SP
+; Cycles:
+; Bytes:
+; Flags: 
+; Affects: HL
+;
+; ldAny SP, r16
+; Cycles:
+; Bytes:
+; Flags: 
+; Affects: HL
 ;;;
 ldAny: macro
     ;FAIL "\1 \2"
