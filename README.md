@@ -79,7 +79,7 @@ Symbol|Def
 ### ldAny
 
 Will perform the fastest/smallest 8 bit `ld` it can.  Prepending an address or label with `#` will cause the `ldh` pnemonic to be used when loading to/from that address.  You can change this token to whatever you want by changing `LDH_TOKEN` in *config.inc*
-Be careful when calling from macros - Currently the parser can confused with something like `ldAny LOW(PARAM_1\@), PARAM_2\@`.  You can use `{}` around assembler variables eg `ldAny LOW({PARAM_2\@}), {PARAM_2\@}` for the right behaviour.
+Be careful with `EQUS` defines.  `ldAny` doesn't know doesn't know when it can `{`dereference`}` them to something it can process, so you'll have to do it yourself, eg `ldAny LOW({PARAM_2\@}), {PARAM_2\@}`.
 
 **ldAny A, 0**
 * Assembles to `xor A, A`
