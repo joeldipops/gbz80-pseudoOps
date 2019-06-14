@@ -200,7 +200,7 @@ IS_P2_HRAM\@ SET 0
             IF IS_P1_HRAM\@ == 1
                 ldh P1\@, A
             ELSE
-                ld A, \2
+                ld \1, A
             ENDC
         ELSE
             ; We only need a single instruction when loading 
