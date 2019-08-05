@@ -69,11 +69,11 @@ RomBankSelector EQU $2000
 MBC5HighRomBankSelector EQU $3000   ; For MBC5s with more than 256 banks, the highest bit of the bank number is set here.
 RamSwitch EQU $0000
 
-HighRomBankSelector EQU $4000 ; For MBC1s the high bits for ROM banks are set here.
-RamBankSelector EQU $4000 ; 
-BankMode EQU $6000 ; Switch between 0 and 1 to determine whether $4000 selects ROM  or RAM banks
+MBC5HighRomBankSelector EQU $4000 ; For MBC1s the high bits for ROM banks are set here.
+MBC1BankMode EQU $6000 ; Set as 1 to enable switching between RAM banks and ROM banks $00/$20/$40/$60
+RamBankSelector EQU $4000
 
 RealTimeClockMode EQU $4000
-LatchRealTimeClock EQU $6000    ; Stops the RTC from updating the registers, so the same value can be read until it is unlatched.
+LatchRealTimeClock EQU $6000 ; Stops the RTC from updating the registers, so the same value can be read until it is re-latched.
 
     ENDC
